@@ -1,3 +1,5 @@
+from fastapi import FastAPI
+
 from services.trip_service import (
     get_trip_category,
     get_travel_season,
@@ -5,6 +7,15 @@ from services.trip_service import (
     get_recommended_places,
     print_recommended_places,
 )
+
+app = FastAPI(title="kelanaAI API")
+@app.get("/api/v1/recommendations")
+def get_recommendations():
+    return ["Tokyo Tower", "Mount Fuji", "Shibuya"]
+
+@app.get("/api/v1/transportations")
+def get_transportations():
+    return ["Bus", "Train", "Flight"]
 
 
 def print_trip_summary(destination, days, budget, currency, travel_month):
