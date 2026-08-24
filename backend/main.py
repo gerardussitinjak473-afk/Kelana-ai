@@ -8,6 +8,7 @@ from services.trip_service import (
     get_recommended_places,
     print_recommended_places,
 )
+from services.bedrock_service import generate_ai_recommendation
 from database import SessionLocal, init_db
 from models.trip import Trip
 
@@ -86,6 +87,34 @@ def delete_trip(id: int):
     db.close()
 
     return {"message": f"Trip {id} deleted successfully"}
+
+
+@app.post("/api/v1/trips/{id}/generate")
+def generate_trip_recommendation(id: int):
+    db = SessionLocal()
+    trip = db.query(Trip).filter(Trip.id == id).first()
+
+    if trip is None:
+        db.close()
+        raise HTTPException(status_code=404, detail="Trip not found")
+
+    ai_recommendation = generate_ai_recommendation(
+        destination=trip.destination,
+        days=trip.days,
+        budget=trip.budget,
+        travel_style=trip.category,
+    )
+
+    trip.ai_recommendation = ai_recommendation
+    db.commit()
+    db.refresh(trip)
+    db.close()
+
+    return {
+        "trip_id": trip.id,
+        "destination": trip.destination,
+        "recommendation": trip.ai_recommendation,
+    }
 
 
 
