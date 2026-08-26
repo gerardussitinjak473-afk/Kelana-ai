@@ -25,6 +25,25 @@ const steps = [
   ["03", "Berangkat tanpa ragu", "Dapatkan rencana harian yang jelas dan fleksibel."],
 ];
 
+function translateItineraryLabel(text) {
+  return text
+    .replace(/^Day\s+(\d+)/i, "Hari $1")
+    .replace(/^Morning:/i, "Pagi:")
+    .replace(/^Afternoon:/i, "Siang:")
+    .replace(/^Evening:/i, "Malam:")
+    .replace(/^Estimated Daily Budget/i, "Estimasi Budget Harian")
+    .replace(/^Local Food Recommendations/i, "Rekomendasi Kuliner Lokal")
+    .replace(/^Transportation Suggestions/i, "Saran Transportasi");
+}
+
+function renderInlineMarkdown(text) {
+  return translateItineraryLabel(text).split(/(\*\*[^*]+\*\*)/g).map((part, index) =>
+    part.startsWith("**") && part.endsWith("**")
+      ? <strong key={index} className="font-extrabold text-ink">{part.slice(2, -2)}</strong>
+      : part
+  );
+}
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -156,10 +175,10 @@ export default function Home() {
               {result.recommendation.split("\n").map((line, index) => {
                 const content = line.trim();
                 if (!content) return <div key={index} className="h-1" />;
-                if (content.startsWith("## ")) return <h3 key={index} className="pt-5 font-[var(--font-playfair)] text-2xl font-semibold text-ink first:pt-0">{content.slice(3)}</h3>;
-                if (content.endsWith(":")) return <h4 key={index} className="pt-2 font-extrabold text-pine">{content}</h4>;
-                if (content.startsWith("- ")) return <p key={index} className="flex gap-3"><span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-coral" />{content.slice(2)}</p>;
-                return <p key={index}>{content}</p>;
+                if (content.startsWith("## ")) return <h3 key={index} className="pt-5 font-[var(--font-playfair)] text-2xl font-semibold text-ink first:pt-0">{renderInlineMarkdown(content.slice(3))}</h3>;
+                if (content.endsWith(":")) return <h4 key={index} className="pt-2 font-extrabold text-pine">{renderInlineMarkdown(content)}</h4>;
+                if (content.startsWith("- ")) return <p key={index} className="flex gap-3"><span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-coral" /><span>{renderInlineMarkdown(content.slice(2))}</span></p>;
+                return <p key={index}>{renderInlineMarkdown(content)}</p>;
               })}
             </div>
           </article>
