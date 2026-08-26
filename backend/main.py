@@ -107,12 +107,19 @@ def generate_trip_recommendation(id: int):
         db.close()
         raise HTTPException(status_code=404, detail="Trip not found")
 
-    ai_recommendation = generate_ai_recommendation(
-        destination=trip.destination,
-        days=trip.days,
-        budget=trip.budget,
-        travel_style=trip.category,
-    )
+    try:
+        ai_recommendation = generate_ai_recommendation(
+            destination=trip.destination,
+            days=trip.days,
+            budget=trip.budget,
+            travel_style=trip.category,
+        )
+    except Exception as exc:
+        db.close()
+        raise HTTPException(
+            status_code=502,
+            detail="Layanan AI belum siap. Periksa AWS credentials, region, dan akses Amazon Bedrock.",
+        ) from exc
 
     trip.ai_recommendation = ai_recommendation
     db.commit()

@@ -28,19 +28,29 @@ const steps = [
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [destination, setDestination] = useState("Labuan Bajo");
+  const [days, setDays] = useState(5);
+  const [budget, setBudget] = useState(2000);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+
+  function chooseDestination(city) {
+    setDestination(city);
+    setResult(null);
+    setError("");
+    window.location.hash = "rencanakan";
+    window.setTimeout(() => document.querySelector('input[name="days"]')?.focus(), 150);
+  }
 
   async function planTrip(event) {
     event.preventDefault();
     setLoading(true);
     setError("");
     setResult(null);
-    const form = new FormData(event.currentTarget);
     const payload = {
-      destination: form.get("destination"),
-      days: Number(form.get("days")),
-      budget: Number(form.get("budget")),
+      destination,
+      days: Number(days),
+      budget: Number(budget),
     };
 
     try {
@@ -49,10 +59,22 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!response.ok) throw new Error("API belum siap");
-      setResult(await response.json());
-    } catch {
-      setError("Backend belum terhubung. Jalankan FastAPI di port 8000 lalu coba lagi.");
+      if (!response.ok) throw new Error("Rencana perjalanan gagal disimpan.");
+      const savedTrip = await response.json();
+
+      const generateResponse = await fetch(`http://localhost:8000/api/v1/trips/${savedTrip.id}/generate`, {
+        method: "POST",
+      });
+      if (!generateResponse.ok) {
+        const detail = await generateResponse.json().catch(() => null);
+        throw new Error(detail?.detail || "AI belum dapat membuat itinerary.");
+      }
+      const generatedTrip = await generateResponse.json();
+      setResult({ ...savedTrip, recommendation: generatedTrip.recommendation });
+    } catch (requestError) {
+      setError(requestError.message === "Failed to fetch"
+        ? "Backend belum terhubung. Jalankan FastAPI di port 8000 lalu coba lagi."
+        : requestError.message);
     } finally {
       setLoading(false);
     }
@@ -103,27 +125,44 @@ export default function Home() {
         <form onSubmit={planTrip} className="rounded-[2rem] bg-white p-5 shadow-float sm:p-7 lg:flex lg:items-end lg:gap-4">
           <label className="mb-4 block flex-1 lg:mb-0">
             <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><MapPinIcon className="h-4 w-4 text-coral" />Destinasi</span>
-            <input required name="destination" defaultValue="Labuan Bajo" placeholder="Mau ke mana?" className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none transition placeholder:text-slate-400 focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
+            <input required name="destination" value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="Mau ke mana?" className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none transition placeholder:text-slate-400 focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
           </label>
           <label className="mb-4 block flex-1 lg:mb-0">
             <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><CalendarDaysIcon className="h-4 w-4 text-coral" />Durasi</span>
-            <select name="days" className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10">
-              <option value="3">3 hari</option><option value="5">5 hari</option><option value="7">7 hari</option><option value="10">10 hari</option>
-            </select>
+            <input required name="days" type="number" min="1" max="30" value={days} onChange={(event) => setDays(event.target.value)} placeholder="Contoh: 5" className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
           </label>
           <label className="mb-5 block flex-1 lg:mb-0">
             <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><WalletIcon className="h-4 w-4 text-coral" />Budget (USD)</span>
-            <input required name="budget" type="number" min="1" defaultValue="2000" className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
+            <input required name="budget" type="number" min="1" value={budget} onChange={(event) => setBudget(event.target.value)} className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
           </label>
           <button disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-coral px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-coral/20 transition hover:-translate-y-0.5 hover:bg-[#df6b54] disabled:cursor-wait disabled:opacity-60 lg:w-auto lg:min-w-52">
-            {loading ? "Merangkai perjalanan..." : "Rancang perjalananku"}<ArrowRightIcon className="h-4 w-4" />
+            {loading ? "AI sedang merangkai..." : "Buat rincian perjalanan"}<ArrowRightIcon className="h-4 w-4" />
           </button>
         </form>
         {(error || result) && (
           <div className={`mx-auto mt-4 flex max-w-3xl items-start gap-3 rounded-2xl border px-5 py-4 text-sm shadow-sm ${result ? "border-lagoon/20 bg-[#eaf5f1] text-pine" : "border-coral/20 bg-[#fff0eb] text-[#8b4437]"}`} role="status">
             {result ? <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0" /> : <SparklesIcon className="mt-0.5 h-5 w-5 shrink-0" />}
-            <p>{result ? `Rencana ${result.destination} selama ${result.days} hari tersimpan. Budget harianmu: USD ${Number(result.daily_budget).toFixed(2)} (${result.category}).` : error}</p>
+            <p>{result ? `Rincian ${result.destination} selama ${result.days} hari sudah siap. Budget harian: USD ${Number(result.daily_budget).toFixed(2)} (${result.category}).` : error}</p>
           </div>
+        )}
+        {result?.recommendation && (
+          <article className="mx-auto mt-6 max-w-4xl overflow-hidden rounded-[2rem] border border-[#dfe6e1] bg-white shadow-float">
+            <div className="bg-pine px-6 py-7 text-white sm:px-9">
+              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#a9d8cc]">Itinerary pilihan KelanaAI</p>
+              <h2 className="mt-2 font-[var(--font-playfair)] text-3xl font-semibold sm:text-4xl">{result.days} hari menjelajahi {result.destination}</h2>
+              <p className="mt-3 text-sm text-white/65">Disesuaikan dengan total budget USD {Number(result.budget).toLocaleString("en-US")}.</p>
+            </div>
+            <div className="space-y-3 px-6 py-7 text-sm leading-7 text-slate-600 sm:px-9 sm:py-9">
+              {result.recommendation.split("\n").map((line, index) => {
+                const content = line.trim();
+                if (!content) return <div key={index} className="h-1" />;
+                if (content.startsWith("## ")) return <h3 key={index} className="pt-5 font-[var(--font-playfair)] text-2xl font-semibold text-ink first:pt-0">{content.slice(3)}</h3>;
+                if (content.endsWith(":")) return <h4 key={index} className="pt-2 font-extrabold text-pine">{content}</h4>;
+                if (content.startsWith("- ")) return <p key={index} className="flex gap-3"><span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-coral" />{content.slice(2)}</p>;
+                return <p key={index}>{content}</p>;
+              })}
+            </div>
+          </article>
         )}
       </section>
 
@@ -134,11 +173,11 @@ export default function Home() {
         </div>
         <div className="grid gap-5 md:grid-cols-3">
           {destinations.map((item, index) => (
-            <article key={item.city} className={`group relative min-h-[340px] overflow-hidden rounded-[2rem] bg-gradient-to-br ${item.tone} p-7 text-white shadow-lg ${index === 1 ? "md:-translate-y-5" : ""}`}>
+            <button type="button" onClick={() => chooseDestination(item.city)} key={item.city} className={`group relative min-h-[340px] overflow-hidden rounded-[2rem] bg-gradient-to-br ${item.tone} p-7 text-left text-white shadow-lg transition duration-300 hover:-translate-y-2 focus:outline-none focus:ring-4 focus:ring-coral/30 ${index === 1 ? "md:-translate-y-5 md:hover:-translate-y-7" : ""}`} aria-label={`Pilih destinasi ${item.city}`}>
               <div className="absolute -right-10 -top-12 text-[11rem] opacity-20 transition duration-500 group-hover:scale-110 group-hover:rotate-6">{item.emoji}</div>
               <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/55 to-transparent" />
-              <div className="relative flex h-full min-h-[286px] flex-col justify-end"><p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-white/70">Pilihan Kelana</p><h3 className="font-[var(--font-playfair)] text-4xl font-semibold">{item.city}</h3><p className="mt-2 text-sm text-white/80">{item.note}</p></div>
-            </article>
+              <div className="relative flex h-full min-h-[286px] flex-col justify-end"><p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-white/70">Pilihan Kelana</p><h3 className="font-[var(--font-playfair)] text-4xl font-semibold">{item.city}</h3><p className="mt-2 text-sm text-white/80">{item.note}</p><span className="mt-5 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em]">Pilih destinasi <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" /></span></div>
+            </button>
           ))}
         </div>
       </section>

@@ -22,6 +22,8 @@ def build_itinerary_prompt(destination: str, days: int, budget: float, travel_st
     return f"""
 You are an experienced travel planner with deep local knowledge.
 
+Write the entire answer in natural, friendly Indonesian. Keep real place names in their original spelling.
+
 Create a detailed day-by-day itinerary for the following trip:
 - Destination: {destination}
 - Duration: {days} day(s)
