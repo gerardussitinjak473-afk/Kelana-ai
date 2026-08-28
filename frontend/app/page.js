@@ -8,10 +8,13 @@ import {
   CheckCircleIcon,
   MapPinIcon,
   SparklesIcon,
+  UsersIcon,
   WalletIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createTrip, generateTrip } from "@/services/tripService";
 
 const destinations = [
   { city: "Ubud", note: "Hening di antara sawah", tone: "from-[#315c50] to-[#83a66b]", emoji: "🌿" },
@@ -45,11 +48,13 @@ function renderInlineMarkdown(text) {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState("Labuan Bajo");
   const [days, setDays] = useState(5);
   const [budget, setBudget] = useState(2000);
+  const [travelStyle, setTravelStyle] = useState("Solo");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
@@ -70,26 +75,14 @@ export default function Home() {
       destination,
       days: Number(days),
       budget: Number(budget),
+      travel_style: travelStyle,
     };
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/trips", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) throw new Error("Rencana perjalanan gagal disimpan.");
-      const savedTrip = await response.json();
-
-      const generateResponse = await fetch(`http://localhost:8000/api/v1/trips/${savedTrip.id}/generate`, {
-        method: "POST",
-      });
-      if (!generateResponse.ok) {
-        const detail = await generateResponse.json().catch(() => null);
-        throw new Error(detail?.detail || "AI belum dapat membuat itinerary.");
-      }
-      const generatedTrip = await generateResponse.json();
+      const savedTrip = await createTrip(payload);
+      const generatedTrip = await generateTrip(savedTrip.id);
       setResult({ ...savedTrip, recommendation: generatedTrip.recommendation });
+      router.push("/trips");
     } catch (requestError) {
       setError(requestError.message === "Failed to fetch"
         ? "Backend belum terhubung. Jalankan FastAPI di port 8000 lalu coba lagi."
@@ -115,6 +108,7 @@ export default function Home() {
             <a href="#inspirasi" className="transition hover:text-[#9bd2c5]">Inspirasi</a>
             <a href="#cara-kerja" className="transition hover:text-[#9bd2c5]">Cara kerja</a>
             <a href="#tentang" className="transition hover:text-[#9bd2c5]">Tentang kami</a>
+            <a href="/trips" className="transition hover:text-[#9bd2c5]">Trip History</a>
             <a href="#rencanakan" className="rounded-full border border-white/40 px-5 py-2.5 transition hover:bg-white hover:text-ink">Mulai merencanakan</a>
           </nav>
           <button onClick={() => setMenuOpen(!menuOpen)} className="rounded-full border border-white/30 p-2.5 md:hidden" aria-label="Buka menu" aria-expanded={menuOpen}>
@@ -122,7 +116,7 @@ export default function Home() {
           </button>
           {menuOpen && (
             <nav className="absolute left-5 right-5 top-20 rounded-3xl bg-white p-5 text-ink shadow-float md:hidden">
-              {[["Inspirasi", "#inspirasi"], ["Cara kerja", "#cara-kerja"], ["Tentang kami", "#tentang"]].map(([label, href]) => (
+              {[["Inspirasi", "#inspirasi"], ["Cara kerja", "#cara-kerja"], ["Tentang kami", "#tentang"], ["Trip History", "/trips"]].map(([label, href]) => (
                 <a key={label} onClick={() => setMenuOpen(false)} href={href} className="block rounded-xl px-4 py-3 font-semibold hover:bg-sand">{label}</a>
               ))}
             </nav>
@@ -153,6 +147,14 @@ export default function Home() {
           <label className="mb-5 block flex-1 lg:mb-0">
             <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><WalletIcon className="h-4 w-4 text-coral" />Budget (USD)</span>
             <input required name="budget" type="number" min="1" value={budget} onChange={(event) => setBudget(event.target.value)} className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
+          </label>
+          <label className="mb-5 block flex-1 lg:mb-0">
+            <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><UsersIcon className="h-4 w-4 text-coral" />Gaya perjalanan</span>
+            <select name="travelStyle" value={travelStyle} onChange={(event) => setTravelStyle(event.target.value)} className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10">
+              <option value="Family">Family</option>
+              <option value="Solo">Solo</option>
+              <option value="Couple">Couple</option>
+            </select>
           </label>
           <button disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-coral px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-coral/20 transition hover:-translate-y-0.5 hover:bg-[#df6b54] disabled:cursor-wait disabled:opacity-60 lg:w-auto lg:min-w-52">
             {loading ? "AI sedang merangkai..." : "Buat rincian perjalanan"}<ArrowRightIcon className="h-4 w-4" />
