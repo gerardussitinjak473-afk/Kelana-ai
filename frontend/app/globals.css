@@ -4,8 +4,8 @@
 
 :root { color-scheme: light; }
 html { scroll-behavior: smooth; }
-body { background: #fbfaf6; color: #102a2e; }
-::selection { background: #f7b7a9; color: #102a2e; }
+body { background: #f7faff; color: #0b1f3a; }
+::selection { background: #bfdbfe; color: #0b1f3a; }
 
 @keyframes drift {
   0%, 100% { transform: translate3d(0, 0, 0); }

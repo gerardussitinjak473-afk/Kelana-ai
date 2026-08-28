@@ -45,7 +45,7 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5 sm:px-8">
           <Link href="/" className="flex items-center gap-2 font-extrabold">
             <span className="grid h-8 w-8 place-items-center rounded-full bg-coral text-white"><PaperAirplaneIcon className="h-4 w-4" /></span>
-            Kelana<span className="-ml-2 text-[#8ed0c0]">AI</span>
+            Kelana<span className="-ml-2 text-blue-300">AI</span>
           </Link>
           <Link href="/trips" className="inline-flex items-center gap-2 text-sm font-bold text-white/75 transition hover:text-white">
             <ArrowLeftIcon className="h-4 w-4" /> Semua perjalanan
@@ -72,7 +72,7 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
                   {getDestinationVisual(trip.destination)}
                 </div>
                 <div>
-                  <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-[#9bd2c5]"><MapPinIcon className="h-4 w-4" /> Detail perjalanan</p>
+                  <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-blue-300"><MapPinIcon className="h-4 w-4" /> Detail perjalanan</p>
                   <h1 className="mt-3 font-[var(--font-playfair)] text-4xl font-semibold sm:text-5xl">{trip.destination}</h1>
                   <div className="mt-5 flex flex-wrap gap-2">
                     <CategoryBadge category={trip.category} />
@@ -96,9 +96,9 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
               </div>
             </div>
 
-            <article className="mt-6 overflow-hidden rounded-[2rem] border border-[#dfe6e1] bg-white">
-              <div className="flex items-center gap-3 border-b border-[#dfe6e1] px-6 py-5 sm:px-8">
-                <span className="grid h-10 w-10 place-items-center rounded-full bg-[#eaf5f1] text-lagoon"><SparklesIcon className="h-5 w-5" /></span>
+            <article className="mt-6 overflow-hidden rounded-[2rem] border border-[#d9e6f5] bg-white">
+              <div className="flex items-center gap-3 border-b border-[#d9e6f5] px-6 py-5 sm:px-8">
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-blue-50 text-lagoon"><SparklesIcon className="h-5 w-5" /></span>
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-coral">Rekomendasi KelanaAI</p>
                   <h2 className="font-[var(--font-playfair)] text-2xl font-semibold text-ink">Itinerary perjalanan</h2>
@@ -108,7 +108,7 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
                 {trip.ai_recommendation ? (
                   <div className="whitespace-pre-wrap text-sm leading-8 text-slate-600">{trip.ai_recommendation}</div>
                 ) : (
-                  <p className="rounded-2xl bg-[#fff8f4] p-5 text-sm leading-6 text-slate-600">Itinerary AI belum dibuat untuk perjalanan ini.</p>
+                  <p className="rounded-2xl bg-blue-50 p-5 text-sm leading-6 text-slate-600">Itinerary AI belum dibuat untuk perjalanan ini.</p>
                 )}
               </div>
             </article>

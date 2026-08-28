@@ -8,9 +8,9 @@ import Link from "next/link";
 import type { BudgetCategory, TravelStyle, Trip } from "@/types/trip";
 
 const categoryStyles: Record<BudgetCategory, string> = {
-  Backpacker: "bg-[#fff0e8] text-[#b65332] ring-[#f6b99f]",
-  Standard: "bg-[#e8f2fb] text-[#23658d] ring-[#a7cce5]",
-  Luxury: "bg-[#e7f5ef] text-[#1f7568] ring-[#9fd4c6]",
+  Backpacker: "bg-sky-50 text-sky-700 ring-sky-200",
+  Standard: "bg-blue-50 text-blue-700 ring-blue-200",
+  Luxury: "bg-indigo-50 text-indigo-700 ring-indigo-200",
 };
 
 const travelStyleIcons: Record<TravelStyle, string> = {
@@ -64,9 +64,9 @@ export function TravelStyleBadge({ travelStyle }: { travelStyle: TravelStyle }) 
 
 export default function TripCard({ trip }: { trip: Trip }) {
   return (
-    <article className="group relative overflow-hidden rounded-[1.75rem] border border-[#dfe6e1] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-lagoon/40 hover:shadow-float sm:p-6">
+    <article className="group relative overflow-hidden rounded-[1.75rem] border border-[#d9e6f5] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-lagoon/40 hover:shadow-float sm:p-6">
       <div className="flex items-start gap-4">
-        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[#eaf5f1] text-3xl shadow-inner" aria-label={`Ikon destinasi ${trip.destination}`}>
+        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-blue-50 text-3xl shadow-inner ring-1 ring-blue-100" aria-label={`Ikon destinasi ${trip.destination}`}>
           {getDestinationVisual(trip.destination)}
         </div>
 
@@ -93,11 +93,12 @@ export default function TripCard({ trip }: { trip: Trip }) {
 
         <Link
           href={`/trips/${trip.id}`}
-          className="absolute inset-0 rounded-[1.75rem] focus:outline-none focus:ring-4 focus:ring-lagoon/20 sm:static sm:inline-flex sm:h-11 sm:w-11 sm:shrink-0 sm:items-center sm:justify-center sm:rounded-full sm:bg-pine sm:text-white sm:transition sm:group-hover:bg-coral"
+          className="absolute inset-0 z-10 rounded-[1.75rem] focus:outline-none focus:ring-4 focus:ring-lagoon/20"
           aria-label={`Lihat detail perjalanan ke ${trip.destination}`}
-        >
-          <ArrowRightIcon className="hidden h-5 w-5 sm:block" />
-        </Link>
+        />
+        <span aria-hidden="true" className="hidden h-11 w-11 shrink-0 place-items-center rounded-full bg-pine text-white transition group-hover:bg-coral sm:grid">
+          <ArrowRightIcon className="h-5 w-5" />
+        </span>
       </div>
       <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-500 sm:hidden">
         <span>Ketuk untuk melihat itinerary</span>

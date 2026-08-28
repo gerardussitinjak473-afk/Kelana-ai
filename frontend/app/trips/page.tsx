@@ -84,9 +84,9 @@ export default function TripsPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
           <Link href="/" className="flex items-center gap-3 font-extrabold">
             <span className="grid h-9 w-9 place-items-center rounded-full bg-coral text-white"><PaperAirplaneIcon className="h-5 w-5" /></span>
-            Kelana<span className="-ml-3 text-[#8ed0c0]">AI</span>
+            Kelana<span className="-ml-3 text-blue-300">AI</span>
           </Link>
-          <Link href="/#rencanakan" className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-extrabold text-ink transition hover:bg-[#eaf5f1]">
+          <Link href="/#rencanakan" className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-extrabold text-ink transition hover:bg-blue-50">
             <PlusIcon className="h-4 w-4" />
             Perjalanan baru
           </Link>
@@ -114,7 +114,7 @@ export default function TripsPage() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Cari destinasi atau travel style..."
-                className="w-full rounded-2xl border border-[#dfe6e1] bg-white py-3.5 pl-12 pr-4 text-sm font-semibold outline-none transition focus:border-lagoon focus:ring-4 focus:ring-lagoon/10"
+                className="w-full rounded-2xl border border-[#d9e6f5] bg-white py-3.5 pl-12 pr-4 text-sm font-semibold outline-none transition focus:border-lagoon focus:ring-4 focus:ring-lagoon/10"
               />
             </label>
             <label>
@@ -122,7 +122,7 @@ export default function TripsPage() {
               <select
                 value={sortMode}
                 onChange={(event) => setSortMode(event.target.value as SortMode)}
-                className="w-full rounded-2xl border border-[#dfe6e1] bg-white px-4 py-3.5 text-sm font-semibold text-ink outline-none transition focus:border-lagoon focus:ring-4 focus:ring-lagoon/10"
+                className="w-full rounded-2xl border border-[#d9e6f5] bg-white px-4 py-3.5 text-sm font-semibold text-ink outline-none transition focus:border-lagoon focus:ring-4 focus:ring-lagoon/10"
               >
                 <option value="latest">Terbaru</option>
                 <option value="oldest">Terlama</option>
@@ -133,16 +133,16 @@ export default function TripsPage() {
         </div>
 
         {loading ? (
-          <div className="mt-10 grid min-h-80 place-items-center rounded-[2rem] border border-[#dfe6e1] bg-white">
+          <div className="mt-10 grid min-h-80 place-items-center rounded-[2rem] border border-[#d9e6f5] bg-white">
             <div className="text-center text-slate-500">
               <ArrowPathIcon className="mx-auto h-8 w-8 animate-spin text-lagoon" />
               <p className="mt-3 font-semibold">Memuat riwayat perjalanan...</p>
             </div>
           </div>
         ) : error ? (
-          <div className="mt-10 grid min-h-80 place-items-center rounded-[2rem] border border-coral/20 bg-white p-8 text-center">
+          <div className="mt-10 grid min-h-80 place-items-center rounded-[2rem] border border-red-200 bg-white p-8 text-center">
             <div>
-              <p className="font-extrabold text-[#8b4437]">Riwayat belum dapat dimuat</p>
+              <p className="font-extrabold text-red-700">Riwayat belum dapat dimuat</p>
               <p className="mt-2 max-w-lg text-sm leading-6 text-slate-600">{error}</p>
               <button onClick={loadTrips} className="mt-5 inline-flex items-center gap-2 rounded-full bg-pine px-5 py-3 text-sm font-extrabold text-white hover:bg-lagoon">
                 <ArrowPathIcon className="h-4 w-4" /> Coba lagi
@@ -152,16 +152,16 @@ export default function TripsPage() {
         ) : trips.length === 0 ? (
           <div className="mt-10 grid min-h-96 place-items-center rounded-[2rem] bg-gradient-to-br from-pine to-lagoon p-8 text-center text-white shadow-float">
             <div>
-              <MapIcon className="mx-auto h-14 w-14 text-[#bde4d9]" />
+              <MapIcon className="mx-auto h-14 w-14 text-blue-200" />
               <h2 className="mt-5 font-[var(--font-playfair)] text-3xl font-semibold">Belum ada perjalanan</h2>
               <p className="mt-2 text-white/70">Buat itinerary pertamamu dan temukan ritme perjalanan yang pas.</p>
-              <Link href="/#rencanakan" className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-extrabold text-pine hover:bg-[#fff0eb]">
+              <Link href="/#rencanakan" className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-extrabold text-pine hover:bg-blue-50">
                 <PlusIcon className="h-4 w-4" /> Rencanakan perjalanan
               </Link>
             </div>
           </div>
         ) : filteredTrips.length === 0 ? (
-          <div className="mt-10 grid min-h-72 place-items-center rounded-[2rem] border border-[#dfe6e1] bg-white p-8 text-center">
+          <div className="mt-10 grid min-h-72 place-items-center rounded-[2rem] border border-[#d9e6f5] bg-white p-8 text-center">
             <div>
               <MagnifyingGlassIcon className="mx-auto h-10 w-10 text-slate-300" />
               <h2 className="mt-4 text-xl font-extrabold text-ink">Perjalanan tidak ditemukan</h2>
@@ -176,7 +176,7 @@ export default function TripsPage() {
             </div>
 
             {filteredTrips.length > ITEMS_PER_PAGE && (
-              <nav className="mt-8 flex flex-col items-center justify-between gap-4 rounded-2xl border border-[#dfe6e1] bg-white px-5 py-4 sm:flex-row" aria-label="Paginasi perjalanan">
+              <nav className="mt-8 flex flex-col items-center justify-between gap-4 rounded-2xl border border-[#d9e6f5] bg-white px-5 py-4 sm:flex-row" aria-label="Paginasi perjalanan">
                 <p className="text-sm text-slate-500">
                   Menampilkan {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredTrips.length)} dari {filteredTrips.length}
                 </p>
@@ -184,7 +184,7 @@ export default function TripsPage() {
                   <button
                     onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                     disabled={currentPage === 1}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-pine transition hover:border-lagoon hover:bg-[#eaf5f1] disabled:cursor-not-allowed disabled:opacity-35"
+                    className="grid h-10 w-10 place-items-center rounded-full border border-blue-100 text-pine transition hover:border-lagoon hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-35"
                     aria-label="Halaman sebelumnya"
                   >
                     <ChevronLeftIcon className="h-4 w-4" />
@@ -193,7 +193,7 @@ export default function TripsPage() {
                   <button
                     onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
                     disabled={currentPage === pageCount}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-pine transition hover:border-lagoon hover:bg-[#eaf5f1] disabled:cursor-not-allowed disabled:opacity-35"
+                    className="grid h-10 w-10 place-items-center rounded-full border border-blue-100 text-pine transition hover:border-lagoon hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-35"
                     aria-label="Halaman berikutnya"
                   >
                     <ChevronRightIcon className="h-4 w-4" />

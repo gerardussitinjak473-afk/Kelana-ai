@@ -18,9 +18,9 @@ import { useRouter } from "next/navigation";
 import { createTrip, generateTrip } from "@/services/tripService";
 
 const destinations = [
-  { city: "Ubud", note: "Hening di antara sawah", tone: "from-[#315c50] to-[#83a66b]", emoji: "🌿" },
-  { city: "Labuan Bajo", note: "Laut, senja, dan pulau", tone: "from-[#1f6170] to-[#ef9d71]", emoji: "⛵" },
-  { city: "Yogyakarta", note: "Cerita di setiap sudut", tone: "from-[#694c3f] to-[#d59b64]", emoji: "🏛️" },
+  { city: "Ubud", note: "Hening di antara sawah", tone: "from-[#0f4c81] to-[#60a5fa]", emoji: "🌿" },
+  { city: "Labuan Bajo", note: "Laut, senja, dan pulau", tone: "from-[#075985] to-[#38bdf8]", emoji: "⛵" },
+  { city: "Yogyakarta", note: "Cerita di setiap sudut", tone: "from-[#1e3a8a] to-[#818cf8]", emoji: "🏛️" },
 ];
 
 const steps = [
@@ -96,20 +96,21 @@ export default function Home() {
   return (
     <main className="overflow-hidden">
       <section className="relative min-h-[760px] text-white lg:min-h-[820px]">
-        <Image src="/kelana-hero.png" alt="Pesisir tropis Indonesia saat matahari terbit" fill priority className="object-cover object-[64%_center]" sizes="100vw" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#071f24]/95 via-[#0d3538]/65 to-[#102a2e]/10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#071f24]/60 via-transparent to-[#071f24]/20" />
+        <Image src="/kelana-hero.png" alt="Pesisir tropis Indonesia saat matahari terbit" fill priority className="object-cover object-[64%_center] saturate-75" sizes="100vw" />
+        <div className="absolute inset-0 bg-[#0c4a6e]/20 mix-blend-color" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#061a36]/95 via-[#123f73]/72 to-[#2563eb]/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0b1f3a]/70 via-transparent to-[#0b1f3a]/20" />
 
         <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
           <a href="#" className="flex items-center gap-2 text-xl font-extrabold tracking-tight" aria-label="KelanaAI beranda">
             <span className="grid h-9 w-9 place-items-center rounded-full bg-coral text-white"><PaperAirplaneIcon className="h-5 w-5" /></span>
-            Kelana<span className="text-[#9bd2c5]">AI</span>
+            Kelana<span className="text-blue-200">AI</span>
           </a>
           <nav className="hidden items-center gap-8 text-sm font-semibold md:flex" aria-label="Navigasi utama">
-            <a href="#inspirasi" className="transition hover:text-[#9bd2c5]">Inspirasi</a>
-            <a href="#cara-kerja" className="transition hover:text-[#9bd2c5]">Cara kerja</a>
-            <a href="#tentang" className="transition hover:text-[#9bd2c5]">Tentang kami</a>
-            <a href="/trips" className="transition hover:text-[#9bd2c5]">Trip History</a>
+            <a href="#inspirasi" className="transition hover:text-blue-200">Inspirasi</a>
+            <a href="#cara-kerja" className="transition hover:text-blue-200">Cara kerja</a>
+            <a href="#tentang" className="transition hover:text-blue-200">Tentang kami</a>
+            <a href="/trips" className="transition hover:text-blue-200">Trip History</a>
             <a href="#rencanakan" className="rounded-full border border-white/40 px-5 py-2.5 transition hover:bg-white hover:text-ink">Mulai merencanakan</a>
           </nav>
           <button onClick={() => setMenuOpen(!menuOpen)} className="rounded-full border border-white/30 p-2.5 md:hidden" aria-label="Buka menu" aria-expanded={menuOpen}>
@@ -126,9 +127,9 @@ export default function Home() {
 
         <div className="relative z-10 mx-auto max-w-7xl px-5 pb-44 pt-24 sm:px-8 sm:pt-32 lg:px-12 lg:pt-36">
           <div className="max-w-3xl">
-            <p className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.24em] text-[#bde4d9]"><span className="h-px w-10 bg-coral" />Perjalananmu, caramu</p>
+            <p className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.24em] text-blue-200"><span className="h-px w-10 bg-coral" />Perjalananmu, caramu</p>
             <h1 className="font-[var(--font-playfair)] text-5xl font-semibold leading-[1.06] tracking-[-0.03em] sm:text-6xl lg:text-8xl">
-              Pergi lebih jauh.<br /><span className="italic text-[#f8c1ae]">Pulang lebih utuh.</span>
+              Pergi lebih jauh.<br /><span className="italic text-blue-200">Pulang lebih utuh.</span>
             </h1>
             <p className="mt-7 max-w-xl text-base leading-8 text-white/80 sm:text-lg">KelanaAI merangkai destinasi, ritme, dan budget menjadi perjalanan yang terasa benar-benar milikmu.</p>
           </div>
@@ -139,38 +140,38 @@ export default function Home() {
         <form onSubmit={planTrip} className="rounded-[2rem] bg-white p-5 shadow-float sm:p-7 lg:flex lg:items-end lg:gap-4">
           <label className="mb-4 block flex-1 lg:mb-0">
             <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><MapPinIcon className="h-4 w-4 text-coral" />Destinasi</span>
-            <input required name="destination" value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="Mau ke mana?" className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none transition placeholder:text-slate-400 focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
+            <input required name="destination" value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="Mau ke mana?" className="w-full rounded-2xl border border-[#d9e6f5] bg-[#f8fbff] px-4 py-4 text-sm font-semibold outline-none transition placeholder:text-slate-400 focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
           </label>
           <label className="mb-4 block flex-1 lg:mb-0">
             <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><CalendarDaysIcon className="h-4 w-4 text-coral" />Durasi</span>
-            <input required name="days" type="number" min="1" max="30" value={days} onChange={(event) => setDays(event.target.value)} placeholder="Contoh: 5" className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
+            <input required name="days" type="number" min="1" max="30" value={days} onChange={(event) => setDays(event.target.value)} placeholder="Contoh: 5" className="w-full rounded-2xl border border-[#d9e6f5] bg-[#f8fbff] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
           </label>
           <label className="mb-5 block flex-1 lg:mb-0">
             <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><WalletIcon className="h-4 w-4 text-coral" />Budget (USD)</span>
-            <input required name="budget" type="number" min="1" value={budget} onChange={(event) => setBudget(event.target.value)} className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
+            <input required name="budget" type="number" min="1" value={budget} onChange={(event) => setBudget(event.target.value)} className="w-full rounded-2xl border border-[#d9e6f5] bg-[#f8fbff] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
           </label>
           <label className="mb-5 block flex-1 lg:mb-0">
             <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><UsersIcon className="h-4 w-4 text-coral" />Gaya perjalanan</span>
-            <select name="travelStyle" value={travelStyle} onChange={(event) => setTravelStyle(event.target.value)} className="w-full rounded-2xl border border-[#dfe6e1] bg-[#fbfcfa] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10">
+            <select name="travelStyle" value={travelStyle} onChange={(event) => setTravelStyle(event.target.value)} className="w-full rounded-2xl border border-[#d9e6f5] bg-[#f8fbff] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10">
               <option value="Family">Family</option>
               <option value="Solo">Solo</option>
               <option value="Couple">Couple</option>
             </select>
           </label>
-          <button disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-coral px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-coral/20 transition hover:-translate-y-0.5 hover:bg-[#df6b54] disabled:cursor-wait disabled:opacity-60 lg:w-auto lg:min-w-52">
+          <button disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-lagoon px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-blue-500/20 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60 lg:w-auto lg:min-w-52">
             {loading ? "AI sedang merangkai..." : "Buat rincian perjalanan"}<ArrowRightIcon className="h-4 w-4" />
           </button>
         </form>
         {(error || result) && (
-          <div className={`mx-auto mt-4 flex max-w-3xl items-start gap-3 rounded-2xl border px-5 py-4 text-sm shadow-sm ${result ? "border-lagoon/20 bg-[#eaf5f1] text-pine" : "border-coral/20 bg-[#fff0eb] text-[#8b4437]"}`} role="status">
+          <div className={`mx-auto mt-4 flex max-w-3xl items-start gap-3 rounded-2xl border px-5 py-4 text-sm shadow-sm ${result ? "border-blue-200 bg-blue-50 text-pine" : "border-red-200 bg-red-50 text-red-700"}`} role="status">
             {result ? <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0" /> : <SparklesIcon className="mt-0.5 h-5 w-5 shrink-0" />}
             <p>{result ? `Rincian ${result.destination} selama ${result.days} hari sudah siap. Budget harian: USD ${Number(result.daily_budget).toFixed(2)} (${result.category}).` : error}</p>
           </div>
         )}
         {result?.recommendation && (
-          <article className="mx-auto mt-6 max-w-4xl overflow-hidden rounded-[2rem] border border-[#dfe6e1] bg-white shadow-float">
+          <article className="mx-auto mt-6 max-w-4xl overflow-hidden rounded-[2rem] border border-[#d9e6f5] bg-white shadow-float">
             <div className="bg-pine px-6 py-7 text-white sm:px-9">
-              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#a9d8cc]">Itinerary pilihan KelanaAI</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-200">Itinerary pilihan KelanaAI</p>
               <h2 className="mt-2 font-[var(--font-playfair)] text-3xl font-semibold sm:text-4xl">{result.days} hari menjelajahi {result.destination}</h2>
               <p className="mt-3 text-sm text-white/65">Disesuaikan dengan total budget USD {Number(result.budget).toLocaleString("en-US")}.</p>
             </div>
@@ -207,7 +208,7 @@ export default function Home() {
       <section id="cara-kerja" className="bg-ink text-white">
         <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:px-12 lg:py-28">
           <div className="grid gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <div><p className="mb-4 text-xs font-extrabold uppercase tracking-[0.2em] text-[#8ed0c0]">Sederhana dari awal</p><h2 className="font-[var(--font-playfair)] text-4xl font-semibold leading-tight sm:text-5xl">Dari angan menjadi itinerary.</h2><p className="mt-5 max-w-md leading-7 text-white/60">Tidak perlu membuka dua belas tab. KelanaAI membantu menyusun titik-titik perjalananmu dalam satu alur yang mudah dipahami.</p></div>
+            <div><p className="mb-4 text-xs font-extrabold uppercase tracking-[0.2em] text-blue-300">Sederhana dari awal</p><h2 className="font-[var(--font-playfair)] text-4xl font-semibold leading-tight sm:text-5xl">Dari angan menjadi itinerary.</h2><p className="mt-5 max-w-md leading-7 text-white/60">Tidak perlu membuka dua belas tab. KelanaAI membantu menyusun titik-titik perjalananmu dalam satu alur yang mudah dipahami.</p></div>
             <ol className="divide-y divide-white/10 border-y border-white/10">
               {steps.map(([number, title, text]) => <li key={number} className="grid gap-3 py-7 sm:grid-cols-[70px_1fr_1.4fr] sm:items-center"><span className="text-sm font-bold text-coral">{number}</span><h3 className="text-lg font-extrabold">{title}</h3><p className="text-sm leading-6 text-white/55">{text}</p></li>)}
             </ol>
@@ -222,9 +223,9 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="bg-[#0a2024] text-white">
+      <footer className="bg-[#07182d] text-white">
         <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-12">
-          <div className="flex flex-col gap-10 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between"><div><div className="text-xl font-extrabold">Kelana<span className="text-[#8ed0c0]">AI</span></div><p className="mt-3 max-w-sm text-sm leading-6 text-white/55">Teman cerdas untuk setiap langkah perjalananmu.</p></div><div className="flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-white/70"><a href="#inspirasi" className="hover:text-white">Inspirasi</a><a href="#cara-kerja" className="hover:text-white">Cara kerja</a><a href="#tentang" className="hover:text-white">Tentang</a><a href="mailto:halo@kelana.ai" className="hover:text-white">Kontak</a></div></div>
+          <div className="flex flex-col gap-10 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between"><div><div className="text-xl font-extrabold">Kelana<span className="text-blue-300">AI</span></div><p className="mt-3 max-w-sm text-sm leading-6 text-white/55">Teman cerdas untuk setiap langkah perjalananmu.</p></div><div className="flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-white/70"><a href="#inspirasi" className="hover:text-white">Inspirasi</a><a href="#cara-kerja" className="hover:text-white">Cara kerja</a><a href="#tentang" className="hover:text-white">Tentang</a><a href="mailto:halo@kelana.ai" className="hover:text-white">Kontak</a></div></div>
           <div className="flex flex-col gap-3 pt-7 text-xs text-white/40 sm:flex-row sm:justify-between"><p>© 2026 KelanaAI. Hak cipta dilindungi.</p><p>Dibuat untuk perjalanan yang lebih bermakna.</p></div>
         </div>
       </footer>
