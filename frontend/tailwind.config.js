@@ -7,14 +7,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ink: "#0B1F3A",
-        pine: "#164E91",
-        lagoon: "#2563EB",
-        coral: "#0284C7",
-        sand: "#F4F8FF",
+        ink: "#22313F",
+        pine: "#2F6F6D",
+        lagoon: "#4F8FA3",
+        coral: "#D97757",
+        sand: "#F7F3EA",
       },
       boxShadow: {
-        float: "0 24px 80px -28px rgba(15, 54, 100, 0.28)",
+        float: "0 24px 80px -28px rgba(34, 49, 63, 0.2)",
       },
     },
   },

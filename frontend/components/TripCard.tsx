@@ -8,9 +8,9 @@ import Link from "next/link";
 import type { BudgetCategory, TravelStyle, Trip } from "@/types/trip";
 
 const categoryStyles: Record<BudgetCategory, string> = {
-  Backpacker: "bg-sky-50 text-sky-700 ring-sky-200",
-  Standard: "bg-blue-50 text-blue-700 ring-blue-200",
-  Luxury: "bg-indigo-50 text-indigo-700 ring-indigo-200",
+  Backpacker: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  Standard: "bg-amber-50 text-amber-700 ring-amber-200",
+  Luxury: "bg-rose-50 text-rose-700 ring-rose-200",
 };
 
 const travelStyleIcons: Record<TravelStyle, string> = {
@@ -64,9 +64,9 @@ export function TravelStyleBadge({ travelStyle }: { travelStyle: TravelStyle }) 
 
 export default function TripCard({ trip }: { trip: Trip }) {
   return (
-    <article className="group relative overflow-hidden rounded-[1.75rem] border border-[#d9e6f5] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-lagoon/40 hover:shadow-float sm:p-6">
+    <article className="group relative overflow-hidden rounded-[1.75rem] border border-[#ded8cc] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-lagoon/40 hover:shadow-float sm:p-6">
       <div className="flex items-start gap-4">
-        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-blue-50 text-3xl shadow-inner ring-1 ring-blue-100" aria-label={`Ikon destinasi ${trip.destination}`}>
+        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-teal-50 text-3xl shadow-inner ring-1 ring-teal-100" aria-label={`Ikon destinasi ${trip.destination}`}>
           {getDestinationVisual(trip.destination)}
         </div>
 
