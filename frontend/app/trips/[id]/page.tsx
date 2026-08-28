@@ -4,6 +4,7 @@ import {
   ArrowLeftIcon,
   CalendarDaysIcon,
   MapPinIcon,
+  PaperAirplaneIcon,
   SparklesIcon,
   WalletIcon,
 } from "@heroicons/react/24/outline";
@@ -42,7 +43,10 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
     <main className="min-h-screen bg-sand">
       <header className="border-b border-white/10 bg-ink text-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5 sm:px-8">
-          <Link href="/" className="font-extrabold">Kelana<span className="text-[#8ed0c0]">AI</span></Link>
+          <Link href="/" className="flex items-center gap-2 font-extrabold">
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-coral text-white"><PaperAirplaneIcon className="h-4 w-4" /></span>
+            Kelana<span className="-ml-2 text-[#8ed0c0]">AI</span>
+          </Link>
           <Link href="/trips" className="inline-flex items-center gap-2 text-sm font-bold text-white/75 transition hover:text-white">
             <ArrowLeftIcon className="h-4 w-4" /> Semua perjalanan
           </Link>

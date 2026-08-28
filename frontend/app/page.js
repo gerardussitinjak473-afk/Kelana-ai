@@ -7,6 +7,7 @@ import {
   CalendarDaysIcon,
   CheckCircleIcon,
   MapPinIcon,
+  PaperAirplaneIcon,
   SparklesIcon,
   UsersIcon,
   WalletIcon,
@@ -101,7 +102,7 @@ export default function Home() {
 
         <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
           <a href="#" className="flex items-center gap-2 text-xl font-extrabold tracking-tight" aria-label="KelanaAI beranda">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-coral text-white"><SparklesIcon className="h-5 w-5" /></span>
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-coral text-white"><PaperAirplaneIcon className="h-5 w-5" /></span>
             Kelana<span className="text-[#9bd2c5]">AI</span>
           </a>
           <nav className="hidden items-center gap-8 text-sm font-semibold md:flex" aria-label="Navigasi utama">
