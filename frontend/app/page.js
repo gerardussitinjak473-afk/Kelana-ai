@@ -15,6 +15,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import UserMenu from "@/components/UserMenu";
+import { useAuth } from "@/context/AuthContext";
+import { ApiError } from "@/services/apiClient";
 import { createTrip, generateTrip } from "@/services/tripService";
 
 const destinations = [
@@ -50,6 +53,7 @@ function renderInlineMarkdown(text) {
 
 export default function Home() {
   const router = useRouter();
+  const { user, loading: authLoading, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState("Labuan Bajo");
@@ -69,6 +73,12 @@ export default function Home() {
 
   async function planTrip(event) {
     event.preventDefault();
+    if (authLoading) return;
+    if (!user) {
+      router.push("/login?next=%2F%23rencanakan");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setResult(null);
@@ -85,6 +95,11 @@ export default function Home() {
       setResult({ ...savedTrip, recommendation: generatedTrip.recommendation });
       router.push("/trips");
     } catch (requestError) {
+      if (requestError instanceof ApiError && requestError.status === 401) {
+        signOut();
+        router.push("/login?next=%2F%23rencanakan");
+        return;
+      }
       setError(requestError.message === "Failed to fetch"
         ? "Backend belum terhubung. Jalankan FastAPI di port 8000 lalu coba lagi."
         : requestError.message);
@@ -106,12 +121,12 @@ export default function Home() {
             <span className="grid h-9 w-9 place-items-center rounded-full bg-coral text-white"><PaperAirplaneIcon className="h-5 w-5" /></span>
             Kelana<span className="text-teal-200">AI</span>
           </a>
-          <nav className="hidden items-center gap-8 text-sm font-semibold md:flex" aria-label="Navigasi utama">
+          <nav className="hidden items-center gap-6 text-sm font-semibold md:flex" aria-label="Navigasi utama">
             <a href="#inspirasi" className="transition hover:text-teal-200">Inspirasi</a>
             <a href="#cara-kerja" className="transition hover:text-teal-200">Cara kerja</a>
             <a href="#tentang" className="transition hover:text-teal-200">Tentang kami</a>
             <a href="/trips" className="transition hover:text-teal-200">Trip History</a>
-            <a href="#rencanakan" className="rounded-full border border-white/40 px-5 py-2.5 transition hover:bg-white hover:text-ink">Mulai merencanakan</a>
+            <UserMenu tone="hero" />
           </nav>
           <button onClick={() => setMenuOpen(!menuOpen)} className="rounded-full border border-white/30 p-2.5 md:hidden" aria-label="Buka menu" aria-expanded={menuOpen}>
             {menuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
@@ -121,6 +136,7 @@ export default function Home() {
               {[["Inspirasi", "#inspirasi"], ["Cara kerja", "#cara-kerja"], ["Tentang kami", "#tentang"], ["Trip History", "/trips"]].map(([label, href]) => (
                 <a key={label} onClick={() => setMenuOpen(false)} href={href} className="block rounded-xl px-4 py-3 font-semibold hover:bg-sand">{label}</a>
               ))}
+              <div className="mt-2 border-t border-slate-100 px-4 pt-4"><UserMenu tone="light" /></div>
             </nav>
           )}
         </header>
@@ -158,8 +174,8 @@ export default function Home() {
               <option value="Couple">Couple</option>
             </select>
           </label>
-          <button disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-pine px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-teal-800/15 transition hover:-translate-y-0.5 hover:bg-[#255a58] disabled:cursor-wait disabled:opacity-60 lg:w-auto lg:min-w-52">
-            {loading ? "AI sedang merangkai..." : "Buat rincian perjalanan"}<ArrowRightIcon className="h-4 w-4" />
+          <button disabled={loading || authLoading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-pine px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-teal-800/15 transition hover:-translate-y-0.5 hover:bg-[#255a58] disabled:cursor-wait disabled:opacity-60 lg:w-auto lg:min-w-52">
+            {loading ? "AI sedang merangkai..." : user ? "Buat rincian perjalanan" : "Masuk untuk mulai"}<ArrowRightIcon className="h-4 w-4" />
           </button>
         </form>
         {(error || result) && (

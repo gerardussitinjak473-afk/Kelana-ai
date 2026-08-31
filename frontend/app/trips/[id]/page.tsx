@@ -17,6 +17,7 @@ import {
   getDestinationVisual,
   TravelStyleBadge,
 } from "@/components/TripCard";
+import UserMenu from "@/components/UserMenu";
 import { getTrip } from "@/services/tripService";
 import type { Trip } from "@/types/trip";
 
@@ -47,9 +48,12 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
             <span className="grid h-8 w-8 place-items-center rounded-full bg-coral text-white"><PaperAirplaneIcon className="h-4 w-4" /></span>
             Kelana<span className="-ml-2 text-teal-300">AI</span>
           </Link>
-          <Link href="/trips" className="inline-flex items-center gap-2 text-sm font-bold text-white/75 transition hover:text-white">
-            <ArrowLeftIcon className="h-4 w-4" /> Semua perjalanan
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/trips" className="hidden items-center gap-2 text-sm font-bold text-white/75 transition hover:text-white sm:inline-flex">
+              <ArrowLeftIcon className="h-4 w-4" /> Semua perjalanan
+            </Link>
+            <UserMenu tone="dark" />
+          </div>
         </div>
       </header>
 

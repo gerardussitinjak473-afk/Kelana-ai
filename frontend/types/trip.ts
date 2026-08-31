@@ -3,6 +3,7 @@ export type TravelStyle = "Family" | "Solo" | "Couple";
 
 export interface Trip {
   id: number;
+  user_id: number;
   destination: string;
   days: number;
   budget: number;

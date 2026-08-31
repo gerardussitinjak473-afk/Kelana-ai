@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import TripCard from "@/components/TripCard";
+import UserMenu from "@/components/UserMenu";
 import { getTrips } from "@/services/tripService";
 import type { Trip } from "@/types/trip";
 
@@ -86,10 +87,13 @@ export default function TripsPage() {
             <span className="grid h-9 w-9 place-items-center rounded-full bg-coral text-white"><PaperAirplaneIcon className="h-5 w-5" /></span>
             Kelana<span className="-ml-3 text-teal-300">AI</span>
           </Link>
-          <Link href="/#rencanakan" className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-extrabold text-ink transition hover:bg-teal-50">
-            <PlusIcon className="h-4 w-4" />
-            Perjalanan baru
-          </Link>
+          <div className="flex items-center gap-3">
+            <UserMenu tone="dark" />
+            <Link href="/#rencanakan" className="hidden items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-extrabold text-ink transition hover:bg-teal-50 sm:inline-flex">
+              <PlusIcon className="h-4 w-4" />
+              Perjalanan baru
+            </Link>
+          </div>
         </div>
       </header>
 

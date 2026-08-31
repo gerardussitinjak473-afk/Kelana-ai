@@ -1,26 +1,18 @@
 # KelanaAI
 
-KelanaAI adalah aplikasi perencana perjalanan berbasis AI. Pada sesi 7, aplikasi Next.js menjadi multi-page dan menampilkan data perjalanan yang tersimpan melalui FastAPI dan PostgreSQL.
+KelanaAI adalah aplikasi perencana perjalanan berbasis AI dengan Next.js, FastAPI, PostgreSQL, dan Amazon Bedrock. Pada sesi 8, aplikasi menjadi sistem multi-user: setiap itinerary mempunyai pemilik dan seluruh akses trip diverifikasi menggunakan JWT.
 
-## Fitur sesi 7
+## Fitur sesi 8
 
-- Dashboard riwayat perjalanan di `/trips` dan halaman detail dinamis `/trips/[id]`.
-- Trip card dengan ikon destinasi, format currency, badge kategori, dan badge travel style.
-- Search berdasarkan destinasi atau travel style.
-- Sorting terbaru, terlama, dan budget tertinggi.
-- Pagination otomatis ketika hasil berisi lebih dari 10 perjalanan.
-- Empty, loading, error, dan no-results state yang jelas.
-
-## Menjalankan frontend
-
-```bash
-cd frontend
-pnpm install
-copy .env.example .env.local
-pnpm dev
-```
-
-Buka `http://localhost:3000`.
+- Registrasi akun dengan password yang di-hash menggunakan bcrypt.
+- Login JWT dan endpoint profil `GET /api/v1/auth/me`.
+- Homepage tetap publik, tetapi pembuatan itinerary AI meminta pengguna login.
+- Proteksi `/trips`, `/trips/[id]`, dan `/profile` menggunakan middleware serta validasi sesi.
+- `GET /trips` hanya mengembalikan perjalanan pengguna yang sedang login.
+- Create menetapkan `user_id` dari JWT, bukan dari input frontend.
+- Update, delete, dan generate menolak akses ke trip milik pengguna lain dengan `403 Forbidden`.
+- Trip lama dipertahankan di bawah akun sistem yang tidak dapat login.
+- Halaman login, register, profile, sapaan personal, dan logout.
 
 ## Menjalankan backend
 
@@ -31,4 +23,24 @@ copy .env.example .env
 uvicorn main:app --reload
 ```
 
-Backend berjalan di `http://localhost:8000`. Pastikan konfigurasi database pada `backend/.env` sudah benar.
+Isi `DATABASE_URL`, konfigurasi Bedrock, dan `JWT_SECRET_KEY` acak sepanjang minimal 32 karakter di `backend/.env`. Backend berjalan di `http://localhost:8000`.
+
+## Menjalankan frontend
+
+```bash
+cd frontend
+pnpm install
+copy .env.example .env.local
+pnpm dev
+```
+
+Buka `http://localhost:3000`. Nilai default frontend mengakses API pada `http://localhost:8000/api/v1`.
+
+## Menjalankan tes keamanan
+
+```bash
+cd backend
+pytest -q
+```
+
+Tes mencakup registrasi, login, endpoint `/auth/me`, kewajiban token pada seluruh endpoint trip, filter daftar berdasarkan pemilik, serta penolakan update/delete/generate lintas pengguna.

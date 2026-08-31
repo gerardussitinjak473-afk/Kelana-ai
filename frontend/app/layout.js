@@ -1,5 +1,6 @@
 import { Manrope, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -13,7 +14,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="id">
       <body className={`${manrope.variable} ${playfair.variable} font-[var(--font-manrope)] antialiased`}>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
