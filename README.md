@@ -4,7 +4,7 @@ KelanaAI adalah aplikasi perencana perjalanan berbasis AI dengan Next.js, FastAP
 
 ## Fitur sesi 9
 
-- Endpoint `POST /api/v1/ask` menggunakan `RetrieveAndGenerate` (alias kompatibilitas: `/api/v1/assistant`).
+- Endpoint `POST /api/v1/ask` mengambil konteks dengan `Retrieve` lalu menghasilkan jawaban grounded melalui Nova Lite (alias kompatibilitas: `/api/v1/assistant`).
 - Halaman Next.js `/assistant` menampilkan jawaban dan nama dokumen sumber.
 - Empat dokumen demo berada di `travel-guides/`.
 - `scripts/sync_knowledge_base.py` mengunggah dokumen ke S3 dan menunggu ingestion selesai.

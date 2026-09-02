@@ -9,19 +9,29 @@ from dotenv import load_dotenv
 load_dotenv()
 
 KNOWLEDGE_BASE_ID = os.getenv("KNOWLEDGE_BASE_ID", "").strip()
-KNOWLEDGE_BASE_MODEL_ARN = os.getenv("KNOWLEDGE_BASE_MODEL_ARN", "").strip()
 AWS_REGION = os.getenv("AWS_REGION", "ap-southeast-2")
+MODEL_ID = os.getenv("MODEL_ID", "amazon.nova-lite-v1:0")
 
 
 class KnowledgeBaseNotConfigured(RuntimeError):
     pass
 
 
-def _client():
+def _retrieval_client():
     return boto3.client("bedrock-agent-runtime", region_name=AWS_REGION)
 
 
+def _generation_client():
+    return boto3.client("bedrock-runtime", region_name=AWS_REGION)
+
+
 def _source_name(reference: dict) -> str | None:
+    metadata = reference.get("metadata", {})
+    for key in ("_document_title", "document_title", "x-amz-bedrock-kb-source-uri"):
+        value = metadata.get(key)
+        if value:
+            return PurePosixPath(urlparse(str(value)).path).name or str(value)
+
     location = reference.get("location", {})
     uri = location.get("s3Location", {}).get("uri")
     if uri:
@@ -29,38 +39,55 @@ def _source_name(reference: dict) -> str | None:
     url = location.get("webLocation", {}).get("url")
     if url:
         return url
-    return None
+    return reference.get("documentId")
 
 
 def ask_knowledge_base(question: str) -> dict:
-    if not KNOWLEDGE_BASE_ID or not KNOWLEDGE_BASE_MODEL_ARN:
+    if not KNOWLEDGE_BASE_ID:
         raise KnowledgeBaseNotConfigured(
-            "KNOWLEDGE_BASE_ID dan KNOWLEDGE_BASE_MODEL_ARN belum dikonfigurasi."
+            "KNOWLEDGE_BASE_ID belum dikonfigurasi."
         )
 
-    response = _client().retrieve_and_generate(
-        input={"text": question},
-        retrieveAndGenerateConfiguration={
-            "type": "KNOWLEDGE_BASE",
-            "knowledgeBaseConfiguration": {
-                "knowledgeBaseId": KNOWLEDGE_BASE_ID,
-                "modelArn": KNOWLEDGE_BASE_MODEL_ARN,
-                "retrievalConfiguration": {
-                    "vectorSearchConfiguration": {"numberOfResults": 5}
-                },
-            },
+    response = _retrieval_client().retrieve(
+        knowledgeBaseId=KNOWLEDGE_BASE_ID,
+        retrievalQuery={"text": question},
+        retrievalConfiguration={
+            "managedSearchConfiguration": {"numberOfResults": 5}
         },
     )
 
     sources = []
-    for citation in response.get("citations", []):
-        for reference in citation.get("retrievedReferences", []):
-            name = _source_name(reference)
-            if name and name not in sources:
-                sources.append(name)
+    context_chunks = []
+    for reference in response.get("retrievalResults", []):
+        text = reference.get("content", {}).get("text", "").strip()
+        name = _source_name(reference) or "Dokumen tanpa judul"
+        if text:
+            context_chunks.append(f"[Sumber: {name}]\n{text}")
+        if name not in sources:
+            sources.append(name)
+
+    if not context_chunks:
+        return {
+            "answer": "Saya tidak menemukan informasi yang relevan di Knowledge Base.",
+            "sources": [],
+            "session_id": None,
+        }
+
+    prompt = (
+        "Jawab pertanyaan dalam bahasa Indonesia hanya berdasarkan konteks berikut. "
+        "Jika konteks tidak cukup, katakan informasi tidak ditemukan. Jangan mengarang fakta. "
+        "Jawab ringkas dan sebutkan nama sumber yang mendukung jawaban.\n\n"
+        + "\n\n".join(context_chunks)
+        + f"\n\nPertanyaan: {question}"
+    )
+    generated = _generation_client().converse(
+        modelId=MODEL_ID,
+        messages=[{"role": "user", "content": [{"text": prompt}]}],
+        inferenceConfig={"temperature": 0, "maxTokens": 800},
+    )
 
     return {
-        "answer": response["output"]["text"],
+        "answer": generated["output"]["message"]["content"][0]["text"],
         "sources": sources,
-        "session_id": response.get("sessionId"),
+        "session_id": None,
     }
