@@ -16,11 +16,11 @@ from services.kb_service import ask_knowledge_base  # noqa: E402
 
 
 QUESTIONS = [
-    "Berapa harga KSC-72 untuk anak, di mana lokasi pengambilannya, dan kapan cruise harus dipesan?",
-    "Untuk KFS-24, kapan batas pemesanan dan berapa menit waktu tunggu gratis setelah pesawat mendarat?",
-    "Berapa manfaat keterlambatan perjalanan NS-2026 dan dokumen apa yang wajib disertakan saat klaim?",
-    "Apa saja empat dokumen Yellow Packet dan apa nama file PDF yang harus diunggah?",
-    "Apakah kehilangan satu barang senilai USD 400 diganti penuh oleh NS-2026? Jelaskan batas yang berlaku.",
+    "Menurut indonesia-customs-and-imei-guide.md, apa yang harus dilakukan wisatawan agar IMEI ponsel dari luar negeri dapat digunakan di Indonesia?",
+    "Menurut indonesian-traveler-payment-guide.md, metode pembayaran dan cara memperoleh uang tunai apa yang disarankan untuk wisatawan Indonesia?",
+    "Menurut japan-halal-dining-guide.md, bagaimana wisatawan Muslim dapat memilih makanan dan restoran halal di Jepang?",
+    "Menurut Kyoto_Travel_Guide_EN.md, tempat dan pengalaman utama apa yang direkomendasikan untuk kunjungan ke Kyoto?",
+    "Menurut Japan-Packing-List.pdf, barang penting apa saja yang perlu dipersiapkan sebelum perjalanan ke Jepang?",
 ]
 
 
@@ -42,7 +42,7 @@ def main() -> None:
         "",
         f"Dijalankan: {datetime.now(timezone.utc).isoformat()}",
         "",
-        "Dokumen berisi kebijakan demo internal dengan kode dan angka yang tidak tersedia dalam pengetahuan umum. Karena itu, jawaban yang menyebut fakta tepat serta sumbernya merupakan bukti retrieval.",
+        "Kelima pertanyaan secara eksplisit membutuhkan informasi dari dokumen yang telah berstatus INDEXED di Amazon Bedrock Knowledge Base. Jawaban dan nama sumber di bawah merupakan keluaran aktual dari masing-masing arsitektur.",
     ]
     for index, question in enumerate(QUESTIONS, 1):
         base_answer = ask_base_model(question)
