@@ -125,6 +125,7 @@ export default function Home() {
             <a href="#inspirasi" className="transition hover:text-teal-200">Inspirasi</a>
             <a href="#cara-kerja" className="transition hover:text-teal-200">Cara kerja</a>
             <a href="#tentang" className="transition hover:text-teal-200">Tentang kami</a>
+            <a href="/assistant" className="transition hover:text-teal-200">AI Assistant</a>
             <a href="/trips" className="transition hover:text-teal-200">Trip History</a>
             <UserMenu tone="hero" />
           </nav>
@@ -133,7 +134,7 @@ export default function Home() {
           </button>
           {menuOpen && (
             <nav className="absolute left-5 right-5 top-20 rounded-3xl bg-white p-5 text-ink shadow-float md:hidden">
-              {[["Inspirasi", "#inspirasi"], ["Cara kerja", "#cara-kerja"], ["Tentang kami", "#tentang"], ["Trip History", "/trips"]].map(([label, href]) => (
+              {[["Inspirasi", "#inspirasi"], ["Cara kerja", "#cara-kerja"], ["Tentang kami", "#tentang"], ["AI Assistant", "/assistant"], ["Trip History", "/trips"]].map(([label, href]) => (
                 <a key={label} onClick={() => setMenuOpen(false)} href={href} className="block rounded-xl px-4 py-3 font-semibold hover:bg-sand">{label}</a>
               ))}
               <div className="mt-2 border-t border-slate-100 px-4 pt-4"><UserMenu tone="light" /></div>

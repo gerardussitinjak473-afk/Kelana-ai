@@ -1,6 +1,14 @@
 # KelanaAI
 
-KelanaAI adalah aplikasi perencana perjalanan berbasis AI dengan Next.js, FastAPI, PostgreSQL, dan Amazon Bedrock. Pada sesi 8, aplikasi menjadi sistem multi-user: setiap itinerary mempunyai pemilik dan seluruh akses trip diverifikasi menggunakan JWT.
+KelanaAI adalah aplikasi perencana perjalanan berbasis AI dengan Next.js, FastAPI, PostgreSQL, dan Amazon Bedrock. Sesi 9 menambahkan travel assistant berbasis Retrieval-Augmented Generation (RAG) dengan jawaban dan referensi dokumen dari Amazon Bedrock Knowledge Bases.
+
+## Fitur sesi 9
+
+- Endpoint `POST /api/v1/ask` menggunakan `RetrieveAndGenerate` (alias kompatibilitas: `/api/v1/assistant`).
+- Halaman Next.js `/assistant` menampilkan jawaban dan nama dokumen sumber.
+- Empat dokumen demo berada di `travel-guides/`.
+- `scripts/sync_knowledge_base.py` mengunggah dokumen ke S3 dan menunggu ingestion selesai.
+- `scripts/compare_answers.py` menguji lima pertanyaan yang sama pada base model dan RAG, lalu membuat `reports/rag-vs-base-model.md`.
 
 ## Fitur sesi 8
 
@@ -25,6 +33,13 @@ uvicorn main:app --reload
 
 Isi `DATABASE_URL`, konfigurasi Bedrock, dan `JWT_SECRET_KEY` acak sepanjang minimal 32 karakter di `backend/.env`. Backend berjalan di `http://localhost:8000`.
 
+Untuk RAG, isi juga `KNOWLEDGE_BASE_ID`, `KNOWLEDGE_BASE_DATA_SOURCE_ID`, `KNOWLEDGE_BASE_MODEL_ARN`, dan `KNOWLEDGE_BASE_S3_URI`. Setelah Knowledge Base dan S3 data source dibuat di AWS:
+
+```bash
+python scripts/sync_knowledge_base.py
+python scripts/compare_answers.py
+```
+
 ## Menjalankan frontend
 
 ```bash
@@ -40,6 +55,7 @@ Buka `http://localhost:3000`. Nilai default frontend mengakses API pada `http://
 
 ```bash
 cd backend
+pip install -r services/requirements-dev.txt
 pytest -q
 ```
 

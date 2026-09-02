@@ -17,6 +17,7 @@ from services.auth_service import (
     normalize_email,
 )
 from services.bedrock_service import generate_ai_recommendation
+from services.kb_service import KnowledgeBaseNotConfigured, ask_knowledge_base
 from services.trip_service import (
     calculate_daily_budget,
     get_recommended_places,
@@ -100,6 +101,20 @@ class UpdateBudgetRequest(BaseModel):
     budget: float = Field(gt=0)
 
 
+class QuestionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=3, max_length=1000)
+
+    @field_validator("question")
+    @classmethod
+    def normalize_question(cls, value: str) -> str:
+        normalized = " ".join(value.split())
+        if len(normalized) < 3:
+            raise ValueError("Pertanyaan minimal 3 karakter")
+        return normalized
+
+
 def _owned_trip_or_error(
     db: Session,
     trip_id: int,
@@ -181,6 +196,22 @@ def get_recommendations():
 @app.get("/api/v1/transportations")
 def get_transportations():
     return ["Bus", "Train", "Flight"]
+
+
+@app.post("/api/v1/ask")
+@app.post("/api/v1/assistant", include_in_schema=False)
+def ask_travel_assistant(request: QuestionRequest):
+    try:
+        result = ask_knowledge_base(request.question)
+    except KnowledgeBaseNotConfigured as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Knowledge Base belum dapat menjawab. Periksa konfigurasi dan status sinkronisasi AWS.",
+        ) from exc
+
+    return {"question": request.question, **result}
 
 
 @app.get("/api/v1/trips")
