@@ -150,3 +150,136 @@ def test_trip_crud_is_isolated_between_two_users():
         "/api/v1/trips",
         headers=authorization(alice_token),
     ).json() == []
+
+
+def test_all_conversation_endpoints_require_authentication():
+    assert client.get("/api/v1/conversations").status_code == 401
+    assert client.post("/api/v1/conversations", json={}).status_code == 401
+    assert client.get("/api/v1/conversations/1/messages").status_code == 401
+    assert client.post(
+        "/api/v1/conversations/1/messages",
+        json={"content": "Hello"},
+    ).status_code == 401
+
+
+def test_conversation_history_is_sent_to_bedrock(monkeypatch):
+    assert register("Alice", "alice@example.com").status_code == 201
+    token = login("alice@example.com")
+    headers = authorization(token)
+    captured_histories: list[list[dict[str, str]]] = []
+
+    def fake_conversation_response(messages: list[dict[str, str]]) -> str:
+        captured_histories.append(messages)
+        return "Jawaban KelanaAI"
+
+    monkeypatch.setattr(
+        "main.generate_conversation_response",
+        fake_conversation_response,
+    )
+
+    created = client.post("/api/v1/conversations", headers=headers)
+    assert created.status_code == 201
+    conversation_id = created.json()["id"]
+    assert created.json()["title"] == "New Conversation"
+
+    first = client.post(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        headers=headers,
+        json={"content": "Plan a family trip to Japan."},
+    )
+    assert first.status_code == 200
+    assert first.json()["conversation"]["title"] == "Plan a family trip to Japan."
+    assert first.json()["user_message"]["created_at"]
+    assert first.json()["assistant_message"]["created_at"]
+
+    second = client.post(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        headers=headers,
+        json={"content": "What should we do on Day 2?"},
+    )
+    assert second.status_code == 200
+
+    assert captured_histories[0] == [
+        {"role": "user", "content": "Plan a family trip to Japan."},
+    ]
+    assert captured_histories[1] == [
+        {"role": "user", "content": "Plan a family trip to Japan."},
+        {"role": "assistant", "content": "Jawaban KelanaAI"},
+        {"role": "user", "content": "What should we do on Day 2?"},
+    ]
+
+    messages = client.get(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        headers=headers,
+    )
+    assert messages.status_code == 200
+    assert [message["role"] for message in messages.json()] == [
+        "user",
+        "assistant",
+        "user",
+        "assistant",
+    ]
+
+
+def test_conversations_are_isolated_between_users(monkeypatch):
+    assert register("Alice", "alice@example.com").status_code == 201
+    assert register("Bob", "bob@example.com").status_code == 201
+    alice_headers = authorization(login("alice@example.com"))
+    bob_headers = authorization(login("bob@example.com"))
+    monkeypatch.setattr(
+        "main.generate_conversation_response",
+        lambda messages: "Jawaban aman",
+    )
+
+    conversation = client.post(
+        "/api/v1/conversations",
+        headers=alice_headers,
+        json={"title": "Japan Family Trip"},
+    ).json()
+    conversation_id = conversation["id"]
+
+    assert client.get(
+        "/api/v1/conversations",
+        headers=bob_headers,
+    ).json() == []
+    assert client.get(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        headers=bob_headers,
+    ).status_code == 404
+    assert client.post(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        headers=bob_headers,
+        json={"content": "Show me Alice's messages"},
+    ).status_code == 404
+
+
+def test_user_message_remains_when_bedrock_fails(monkeypatch):
+    assert register("Alice", "alice@example.com").status_code == 201
+    headers = authorization(login("alice@example.com"))
+    conversation_id = client.post(
+        "/api/v1/conversations",
+        headers=headers,
+        json={},
+    ).json()["id"]
+
+    def unavailable_bedrock(messages):
+        raise RuntimeError("Bedrock unavailable")
+
+    monkeypatch.setattr(
+        "main.generate_conversation_response",
+        unavailable_bedrock,
+    )
+    response = client.post(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        headers=headers,
+        json={"content": "Please plan a trip"},
+    )
+    assert response.status_code == 502
+
+    messages = client.get(
+        f"/api/v1/conversations/{conversation_id}/messages",
+        headers=headers,
+    ).json()
+    assert [(message["role"], message["content"]) for message in messages] == [
+        ("user", "Please plan a trip"),
+    ]

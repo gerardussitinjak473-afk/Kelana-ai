@@ -1,6 +1,15 @@
 # KelanaAI
 
-KelanaAI adalah aplikasi perencana perjalanan berbasis AI dengan Next.js, FastAPI, PostgreSQL, dan Amazon Bedrock. Pada sesi 8, aplikasi menjadi sistem multi-user: setiap itinerary mempunyai pemilik dan seluruh akses trip diverifikasi menggunakan JWT.
+KelanaAI adalah aplikasi perencana perjalanan berbasis AI dengan Next.js, FastAPI, PostgreSQL, dan Amazon Bedrock. Aplikasi mendukung itinerary personal serta percakapan multi-turn yang menyimpan riwayat di database dan mengirimkan konteks tersebut kembali ke Amazon Bedrock.
+
+## Fitur sesi 10
+
+- Conversation dan message tersimpan per pengguna dengan proteksi ownership JWT.
+- Riwayat percakapan disusun ulang oleh backend sebagai konteks Amazon Bedrock.
+- Chat Next.js di `/chat` dengan daftar percakapan dan judul aktif.
+- Auto-scroll ke pesan terbaru saat membuka, berpindah, mengirim, dan menerima pesan.
+- Typing indicator selama KelanaAI memproses jawaban.
+- Timestamp server pada setiap bubble pesan.
 
 ## Fitur sesi 8
 

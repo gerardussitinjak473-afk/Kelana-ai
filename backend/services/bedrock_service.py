@@ -70,3 +70,35 @@ def generate_ai_recommendation(destination: str, days: int, budget: float, trave
 
     ai_response = response["output"]["message"]["content"][0]["text"]
     return ai_response
+
+
+def generate_conversation_response(messages: list[dict[str, str]]) -> str:
+    """Generate a reply using the complete persisted conversation history."""
+    bedrock_messages = [
+        {
+            "role": message["role"],
+            "content": [{"text": message["content"]}],
+        }
+        for message in messages
+        if message["role"] in {"user", "assistant"} and message["content"].strip()
+    ]
+
+    response = client.converse(
+        modelId=MODEL_ID,
+        system=[
+            {
+                "text": (
+                    "You are KelanaAI, a helpful travel planning assistant. "
+                    "Use the conversation history to answer follow-up questions "
+                    "consistently. Reply in the language used by the user."
+                )
+            }
+        ],
+        messages=bedrock_messages,
+    )
+
+    content = response["output"]["message"]["content"]
+    answer = "".join(part.get("text", "") for part in content).strip()
+    if not answer:
+        raise RuntimeError("Amazon Bedrock returned an empty response")
+    return answer
