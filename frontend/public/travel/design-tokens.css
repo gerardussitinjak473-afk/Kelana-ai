@@ -1,0 +1,12 @@
+:root {
+  --travel-primary: #0F766E;
+  --travel-secondary: #F59E0B;
+  --travel-bg: #F8FAFC;
+  --travel-surface: #FFFFFF;
+  --travel-text: #0F172A;
+  --travel-muted: #64748B;
+  --travel-border: #E2E8F0;
+  --travel-radius-card: 20px;
+  --travel-radius-button: 12px;
+  --travel-shadow-card: 0 8px 30px rgba(15, 23, 42, 0.08);
+}

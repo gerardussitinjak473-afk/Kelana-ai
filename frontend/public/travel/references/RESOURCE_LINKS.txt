@@ -1,0 +1,33 @@
+TRAVEL UI/UX REFERENCES
+
+Figma Community:
+https://www.figma.com/community/
+
+Figma UI Kits:
+https://help.figma.com/hc/en-us/articles/24037724065943-Start-designing-with-UI-kits
+
+Travel Planning UI Kit:
+https://www.freefigmatemplates.com/gallery/travel-planning-ui-kit
+
+Travel Destination UI:
+https://www.freefigmatemplates.com/gallery/travel-destination-ui
+
+Travlia Travel Agency UI Kit:
+https://www.titanui.com/129727-travlia-travel-agency-website-ui-kit/
+
+Travello Free Travel Figma Template:
+https://templatesjungle.gumroad.com/l/travello-free-travel-figma-template
+
+Free 3D Travel Icons:
+https://85renders.gumroad.com/l/free-3d-travel-icons
+
+Unsplash Travel Photos:
+https://unsplash.com/s/photos/travel
+
+Unsplash License:
+https://unsplash.com/license
+
+Notes:
+- Figma Community resources generally need to be duplicated/opened through Figma; licensing varies by resource.
+- Third-party files are linked here instead of redistributed.
+- Unsplash states its images are generally free for personal and commercial use under its license, but additional rights can apply to recognizable people, trademarks, logos, or copyrighted works.

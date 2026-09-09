@@ -1,4 +1,1 @@
--r requirements.txt
-
-httpx
-pytest
+-r ../requirements-dev.txt

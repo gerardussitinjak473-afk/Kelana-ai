@@ -10,7 +10,7 @@ load_dotenv()
 
 KNOWLEDGE_BASE_ID = os.getenv("KNOWLEDGE_BASE_ID", "").strip()
 AWS_REGION = os.getenv("AWS_REGION", "ap-southeast-2")
-MODEL_ID = os.getenv("MODEL_ID", "amazon.nova-lite-v1:0")
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID") or os.getenv("MODEL_ID", "amazon.nova-lite-v1:0")
 
 
 class KnowledgeBaseNotConfigured(RuntimeError):

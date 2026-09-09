@@ -1,251 +1,53 @@
 "use client";
-
 import Image from "next/image";
-import {
-  ArrowRightIcon,
-  Bars3Icon,
-  CalendarDaysIcon,
-  CheckCircleIcon,
-  MapPinIcon,
-  PaperAirplaneIcon,
-  SparklesIcon,
-  UsersIcon,
-  WalletIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {useEffect,useState} from "react";
+import {useRouter} from "next/navigation";
 import UserMenu from "@/components/UserMenu";
-import { useAuth } from "@/context/AuthContext";
-import { ApiError } from "@/services/apiClient";
-import { createTrip, generateTrip } from "@/services/tripService";
-
-const destinations = [
-  { city: "Ubud", note: "Hening di antara sawah", tone: "from-[#3f6657] to-[#88a47c]", emoji: "🌿" },
-  { city: "Labuan Bajo", note: "Laut, senja, dan pulau", tone: "from-[#2f6f6d] to-[#67a6b0]", emoji: "⛵" },
-  { city: "Yogyakarta", note: "Cerita di setiap sudut", tone: "from-[#8a5e4d] to-[#d39a6a]", emoji: "🏛️" },
+import {useAuth} from "@/context/AuthContext";
+import {ApiError} from "@/services/apiClient";
+import {createTrip,generateTrip} from "@/services/tripService";
+const escapes=[
+ {name:"Labuan Bajo",region:"Nusa Tenggara Timur",category:"Laut & pulau",days:5,budget:750,icon:"plane",description:"Hari yang pelan, pulau yang jauh, dan senja di atas kapal.",color:"sea"},
+ {name:"Ubud",region:"Bali",category:"Alam & tenang",days:4,budget:400,icon:"compass",description:"Sisakan waktu untuk berjalan, menikmati sawah, dan menemukan sudut sunyi.",color:"forest"},
+ {name:"Yogyakarta",region:"Daerah Istimewa Yogyakarta",category:"Budaya & rasa",days:3,budget:250,icon:"map-pin",description:"Jelajahi cerita kota, ruang seni, dan rasa yang membuat ingin kembali.",color:"sunset"}
 ];
-
-const steps = [
-  ["01", "Ceritakan perjalananmu", "Pilih tujuan, durasi, dan budget yang nyaman."],
-  ["02", "KelanaAI merangkai", "AI menyesuaikan ritme dan rekomendasi untukmu."],
-  ["03", "Berangkat tanpa ragu", "Dapatkan rencana harian yang jelas dan fleksibel."],
-];
-
-function translateItineraryLabel(text) {
-  return text
-    .replace(/^Day\s+(\d+)/i, "Hari $1")
-    .replace(/^Morning:/i, "Pagi:")
-    .replace(/^Afternoon:/i, "Siang:")
-    .replace(/^Evening:/i, "Malam:")
-    .replace(/^Estimated Daily Budget/i, "Estimasi Budget Harian")
-    .replace(/^Local Food Recommendations/i, "Rekomendasi Kuliner Lokal")
-    .replace(/^Transportation Suggestions/i, "Saran Transportasi");
-}
-
-function renderInlineMarkdown(text) {
-  return translateItineraryLabel(text).split(/(\*\*[^*]+\*\*)/g).map((part, index) =>
-    part.startsWith("**") && part.endsWith("**")
-      ? <strong key={index} className="font-extrabold text-ink">{part.slice(2, -2)}</strong>
-      : part
-  );
-}
-
-export default function Home() {
-  const router = useRouter();
-  const { user, loading: authLoading, signOut } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [destination, setDestination] = useState("Labuan Bajo");
-  const [days, setDays] = useState(5);
-  const [budget, setBudget] = useState(2000);
-  const [travelStyle, setTravelStyle] = useState("Solo");
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
-
-  function chooseDestination(city) {
-    setDestination(city);
-    setResult(null);
-    setError("");
-    window.location.hash = "rencanakan";
-    window.setTimeout(() => document.querySelector('input[name="days"]')?.focus(), 150);
-  }
-
-  async function planTrip(event) {
-    event.preventDefault();
-    if (authLoading) return;
-    if (!user) {
-      router.push("/login?next=%2F%23rencanakan");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-    setResult(null);
-    const payload = {
-      destination,
-      days: Number(days),
-      budget: Number(budget),
-      travel_style: travelStyle,
-    };
-
-    try {
-      const savedTrip = await createTrip(payload);
-      const generatedTrip = await generateTrip(savedTrip.id);
-      setResult({ ...savedTrip, recommendation: generatedTrip.recommendation });
-      router.push("/trips");
-    } catch (requestError) {
-      if (requestError instanceof ApiError && requestError.status === 401) {
-        signOut();
-        router.push("/login?next=%2F%23rencanakan");
-        return;
-      }
-      setError(requestError.message === "Failed to fetch"
-        ? "Backend belum terhubung. Jalankan FastAPI di port 8000 lalu coba lagi."
-        : requestError.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <main className="overflow-hidden">
-      <section className="relative min-h-[760px] text-white lg:min-h-[820px]">
-        <Image src="/kelana-hero.png" alt="Pesisir tropis Indonesia saat matahari terbit" fill priority className="object-cover object-[64%_center] saturate-75" sizes="100vw" />
-        <div className="absolute inset-0 bg-[#5c8d89]/14 mix-blend-color" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#17242f]/95 via-[#2f5256]/72 to-[#4f8fa3]/8" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#192a35]/68 via-transparent to-[#192a35]/18" />
-
-        <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
-          <a href="#" className="flex items-center gap-2 text-xl font-extrabold tracking-tight" aria-label="KelanaAI beranda">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-coral text-white"><PaperAirplaneIcon className="h-5 w-5" /></span>
-            Kelana<span className="text-teal-200">AI</span>
-          </a>
-          <nav className="hidden items-center gap-6 text-sm font-semibold md:flex" aria-label="Navigasi utama">
-            <a href="#inspirasi" className="transition hover:text-teal-200">Inspirasi</a>
-            <a href="#cara-kerja" className="transition hover:text-teal-200">Cara kerja</a>
-            <a href="#tentang" className="transition hover:text-teal-200">Tentang kami</a>
-            <a href="/assistant" className="transition hover:text-teal-200">AI Assistant</a>
-            <a href="/trips" className="transition hover:text-teal-200">Trip History</a>
-            <UserMenu tone="hero" />
-          </nav>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="rounded-full border border-white/30 p-2.5 md:hidden" aria-label="Buka menu" aria-expanded={menuOpen}>
-            {menuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
-          </button>
-          {menuOpen && (
-            <nav className="absolute left-5 right-5 top-20 rounded-3xl bg-white p-5 text-ink shadow-float md:hidden">
-              {[["Inspirasi", "#inspirasi"], ["Cara kerja", "#cara-kerja"], ["Tentang kami", "#tentang"], ["AI Assistant", "/assistant"], ["Trip History", "/trips"]].map(([label, href]) => (
-                <a key={label} onClick={() => setMenuOpen(false)} href={href} className="block rounded-xl px-4 py-3 font-semibold hover:bg-sand">{label}</a>
-              ))}
-              <div className="mt-2 border-t border-slate-100 px-4 pt-4"><UserMenu tone="light" /></div>
-            </nav>
-          )}
-        </header>
-
-        <div className="relative z-10 mx-auto max-w-7xl px-5 pb-44 pt-24 sm:px-8 sm:pt-32 lg:px-12 lg:pt-36">
-          <div className="max-w-3xl">
-            <p className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.24em] text-teal-200"><span className="h-px w-10 bg-coral" />Perjalananmu, caramu</p>
-            <h1 className="font-[var(--font-playfair)] text-5xl font-semibold leading-[1.06] tracking-[-0.03em] sm:text-6xl lg:text-8xl">
-              Pergi lebih jauh.<br /><span className="italic text-teal-200">Pulang lebih utuh.</span>
-            </h1>
-            <p className="mt-7 max-w-xl text-base leading-8 text-white/80 sm:text-lg">KelanaAI merangkai destinasi, ritme, dan budget menjadi perjalanan yang terasa benar-benar milikmu.</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="rencanakan" className="relative z-20 mx-auto -mt-28 max-w-7xl px-5 sm:px-8 lg:px-12">
-        <form onSubmit={planTrip} className="rounded-[2rem] bg-white p-5 shadow-float sm:p-7 lg:flex lg:items-end lg:gap-4">
-          <label className="mb-4 block flex-1 lg:mb-0">
-            <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><MapPinIcon className="h-4 w-4 text-coral" />Destinasi</span>
-            <input required name="destination" value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="Mau ke mana?" className="w-full rounded-2xl border border-[#ded8cc] bg-[#fdfbf7] px-4 py-4 text-sm font-semibold outline-none transition placeholder:text-slate-400 focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
-          </label>
-          <label className="mb-4 block flex-1 lg:mb-0">
-            <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><CalendarDaysIcon className="h-4 w-4 text-coral" />Durasi</span>
-            <input required name="days" type="number" min="1" max="30" value={days} onChange={(event) => setDays(event.target.value)} placeholder="Contoh: 5" className="w-full rounded-2xl border border-[#ded8cc] bg-[#fdfbf7] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
-          </label>
-          <label className="mb-5 block flex-1 lg:mb-0">
-            <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><WalletIcon className="h-4 w-4 text-coral" />Budget (USD)</span>
-            <input required name="budget" type="number" min="1" value={budget} onChange={(event) => setBudget(event.target.value)} className="w-full rounded-2xl border border-[#ded8cc] bg-[#fdfbf7] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10" />
-          </label>
-          <label className="mb-5 block flex-1 lg:mb-0">
-            <span className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-pine"><UsersIcon className="h-4 w-4 text-coral" />Gaya perjalanan</span>
-            <select name="travelStyle" value={travelStyle} onChange={(event) => setTravelStyle(event.target.value)} className="w-full rounded-2xl border border-[#ded8cc] bg-[#fdfbf7] px-4 py-4 text-sm font-semibold outline-none focus:border-lagoon focus:ring-4 focus:ring-lagoon/10">
-              <option value="Family">Family</option>
-              <option value="Solo">Solo</option>
-              <option value="Couple">Couple</option>
-            </select>
-          </label>
-          <button disabled={loading || authLoading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-pine px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-teal-800/15 transition hover:-translate-y-0.5 hover:bg-[#255a58] disabled:cursor-wait disabled:opacity-60 lg:w-auto lg:min-w-52">
-            {loading ? "AI sedang merangkai..." : user ? "Buat rincian perjalanan" : "Masuk untuk mulai"}<ArrowRightIcon className="h-4 w-4" />
-          </button>
-        </form>
-        {(error || result) && (
-          <div className={`mx-auto mt-4 flex max-w-3xl items-start gap-3 rounded-2xl border px-5 py-4 text-sm shadow-sm ${result ? "border-teal-200 bg-teal-50 text-pine" : "border-red-200 bg-red-50 text-red-700"}`} role="status">
-            {result ? <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0" /> : <SparklesIcon className="mt-0.5 h-5 w-5 shrink-0" />}
-            <p>{result ? `Rincian ${result.destination} selama ${result.days} hari sudah siap. Budget harian: USD ${Number(result.daily_budget).toFixed(2)} (${result.category}).` : error}</p>
-          </div>
-        )}
-        {result?.recommendation && (
-          <article className="mx-auto mt-6 max-w-4xl overflow-hidden rounded-[2rem] border border-[#ded8cc] bg-white shadow-float">
-            <div className="bg-pine px-6 py-7 text-white sm:px-9">
-              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-teal-200">Itinerary pilihan KelanaAI</p>
-              <h2 className="mt-2 font-[var(--font-playfair)] text-3xl font-semibold sm:text-4xl">{result.days} hari menjelajahi {result.destination}</h2>
-              <p className="mt-3 text-sm text-white/65">Disesuaikan dengan total budget USD {Number(result.budget).toLocaleString("en-US")}.</p>
-            </div>
-            <div className="space-y-3 px-6 py-7 text-sm leading-7 text-slate-600 sm:px-9 sm:py-9">
-              {result.recommendation.split("\n").map((line, index) => {
-                const content = line.trim();
-                if (!content) return <div key={index} className="h-1" />;
-                if (content.startsWith("## ")) return <h3 key={index} className="pt-5 font-[var(--font-playfair)] text-2xl font-semibold text-ink first:pt-0">{renderInlineMarkdown(content.slice(3))}</h3>;
-                if (content.endsWith(":")) return <h4 key={index} className="pt-2 font-extrabold text-pine">{renderInlineMarkdown(content)}</h4>;
-                if (content.startsWith("- ")) return <p key={index} className="flex gap-3"><span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-coral" /><span>{renderInlineMarkdown(content.slice(2))}</span></p>;
-                return <p key={index}>{renderInlineMarkdown(content)}</p>;
-              })}
-            </div>
-          </article>
-        )}
-      </section>
-
-      <section id="inspirasi" className="mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:px-12 lg:py-32">
-        <div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div><p className="mb-3 text-xs font-extrabold uppercase tracking-[0.2em] text-coral">Dekat, namun berbeda</p><h2 className="max-w-2xl font-[var(--font-playfair)] text-4xl font-semibold leading-tight sm:text-5xl">Tempat yang membuatmu ingin tinggal sedikit lebih lama.</h2></div>
-          <a href="#rencanakan" className="flex shrink-0 items-center gap-2 font-bold text-pine">Jelajahi destinasi <ArrowRightIcon className="h-4 w-4" /></a>
-        </div>
-        <div className="grid gap-5 md:grid-cols-3">
-          {destinations.map((item, index) => (
-            <button type="button" onClick={() => chooseDestination(item.city)} key={item.city} className={`group relative min-h-[340px] overflow-hidden rounded-[2rem] bg-gradient-to-br ${item.tone} p-7 text-left text-white shadow-lg transition duration-300 hover:-translate-y-2 focus:outline-none focus:ring-4 focus:ring-coral/30 ${index === 1 ? "md:-translate-y-5 md:hover:-translate-y-7" : ""}`} aria-label={`Pilih destinasi ${item.city}`}>
-              <div className="absolute -right-10 -top-12 text-[11rem] opacity-20 transition duration-500 group-hover:scale-110 group-hover:rotate-6">{item.emoji}</div>
-              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/55 to-transparent" />
-              <div className="relative flex h-full min-h-[286px] flex-col justify-end"><p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-white/70">Pilihan Kelana</p><h3 className="font-[var(--font-playfair)] text-4xl font-semibold">{item.city}</h3><p className="mt-2 text-sm text-white/80">{item.note}</p><span className="mt-5 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em]">Pilih destinasi <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" /></span></div>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section id="cara-kerja" className="bg-ink text-white">
-        <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:px-12 lg:py-28">
-          <div className="grid gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <div><p className="mb-4 text-xs font-extrabold uppercase tracking-[0.2em] text-teal-300">Sederhana dari awal</p><h2 className="font-[var(--font-playfair)] text-4xl font-semibold leading-tight sm:text-5xl">Dari angan menjadi itinerary.</h2><p className="mt-5 max-w-md leading-7 text-white/60">Tidak perlu membuka dua belas tab. KelanaAI membantu menyusun titik-titik perjalananmu dalam satu alur yang mudah dipahami.</p></div>
-            <ol className="divide-y divide-white/10 border-y border-white/10">
-              {steps.map(([number, title, text]) => <li key={number} className="grid gap-3 py-7 sm:grid-cols-[70px_1fr_1.4fr] sm:items-center"><span className="text-sm font-bold text-coral">{number}</span><h3 className="text-lg font-extrabold">{title}</h3><p className="text-sm leading-6 text-white/55">{text}</p></li>)}
-            </ol>
-          </div>
-        </div>
-      </section>
-
-      <section id="tentang" className="relative bg-sand">
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-24 sm:px-8 lg:grid-cols-2 lg:px-12 lg:py-28">
-          <div className="animate-drift rounded-[2.5rem] bg-coral p-8 text-white sm:p-10"><SparklesIcon className="h-10 w-10" /><p className="mt-16 font-[var(--font-playfair)] text-3xl leading-snug sm:text-4xl">“Bukan perjalanan yang paling padat, melainkan yang paling terasa.”</p><p className="mt-7 text-sm font-bold uppercase tracking-[0.18em] text-white/70">Filosofi KelanaAI</p></div>
-          <div className="flex flex-col justify-center lg:pl-10"><p className="mb-4 text-xs font-extrabold uppercase tracking-[0.2em] text-coral">Teknologi yang mengerti ritme</p><h2 className="font-[var(--font-playfair)] text-4xl font-semibold leading-tight sm:text-5xl">Lebih sedikit merencanakan. Lebih banyak mengalami.</h2><p className="mt-6 leading-8 text-slate-600">Kami percaya AI seharusnya membuat perjalanan terasa lebih manusiawi: memberi pilihan yang relevan, ruang untuk spontan, dan kendali tetap di tanganmu.</p></div>
-        </div>
-      </section>
-
-      <footer className="bg-[#17242f] text-white">
-        <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-12">
-          <div className="flex flex-col gap-10 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between"><div><div className="text-xl font-extrabold">Kelana<span className="text-teal-300">AI</span></div><p className="mt-3 max-w-sm text-sm leading-6 text-white/55">Teman cerdas untuk setiap langkah perjalananmu.</p></div><div className="flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-white/70"><a href="#inspirasi" className="hover:text-white">Inspirasi</a><a href="#cara-kerja" className="hover:text-white">Cara kerja</a><a href="#tentang" className="hover:text-white">Tentang</a><a href="mailto:halo@kelana.ai" className="hover:text-white">Kontak</a></div></div>
-          <div className="flex flex-col gap-3 pt-7 text-xs text-white/40 sm:flex-row sm:justify-between"><p>© 2026 KelanaAI. Hak cipta dilindungi.</p><p>Dibuat untuk perjalanan yang lebih bermakna.</p></div>
-        </div>
-      </footer>
-    </main>
-  );
+function Icon({name,...props}){return <img src={`/travel/icons/${name}.svg`} alt="" width="22" height="22" {...props}/>}
+export default function Home(){
+ const router=useRouter();const {user,loading:authLoading,signOut}=useAuth();
+ const [menu,setMenu]=useState(false),[destination,setDestination]=useState("Labuan Bajo"),[days,setDays]=useState(5),[budget,setBudget]=useState(750),[style,setStyle]=useState("Solo"),[loading,setLoading]=useState(false),[error,setError]=useState(""),[filter,setFilter]=useState("Semua"),[selected,setSelected]=useState("Labuan Bajo"),[savedId,setSavedId]=useState(null);
+ useEffect(()=>{try{const draft=JSON.parse(sessionStorage.getItem("kelana-draft")||"null");if(draft){setDestination(draft.destination);setDays(draft.days);setBudget(draft.budget);setStyle(draft.travel_style)}}catch{}},[]);
+ function choose(item){setDestination(item.name);setSelected(item.name);setDays(item.days);setBudget(item.budget);setSavedId(null);setError("");window.dispatchEvent(new Event("kelana-flight"));document.getElementById("rencanakan").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});}
+ async function submit(e){e.preventDefault();if(authLoading||loading)return;setError("");const payload={destination:destination.trim(),days:Number(days),budget:Number(budget),travel_style:style};
+  if(!payload.destination){setError("Isi destinasi perjalananmu terlebih dahulu.");return}
+  if(!user){try{sessionStorage.setItem("kelana-draft",JSON.stringify(payload))}catch{}router.push("/login?next=%2F%23rencanakan");return}
+  setLoading(true);window.dispatchEvent(new Event("kelana-flight"));
+  try{const id=savedId||(await createTrip(payload)).id;setSavedId(id);await generateTrip(id);try{sessionStorage.removeItem("kelana-draft")}catch{}router.push(`/trips/${id}`)}
+  catch(err){if(err instanceof ApiError&&err.status===401){signOut();router.push("/login?next=%2F%23rencanakan")}else setError(err instanceof Error?err.message:"Rencana belum berhasil dibuat. Silakan coba lagi.")}
+  finally{setLoading(false)}
+ }
+ const nav=<><a href="#inspirasi" onClick={()=>setMenu(false)}>Jelajahi</a><Link href="/trips">Perjalananku</Link><Link href="/chat">AI Chat</Link><Link href="/assistant">Asisten pengetahuan</Link><Link href="/about">Tentang</Link></>;
+ return <main className="home">
+  <header className="site-header"><Link href="/" className="brand"><span className="brand-mark"><Icon name="plane"/></span>Kelana<span>AI</span></Link><nav className="desktop-nav" aria-label="Navigasi utama">{nav}</nav><div className="header-actions"><UserMenu tone="light"/><button className="menu-toggle" aria-label={menu?"Tutup menu":"Buka menu"} aria-expanded={menu} onClick={()=>setMenu(!menu)}>{menu?"✕":"☰"}</button></div>{menu&&<nav className="mobile-nav" aria-label="Navigasi seluler">{nav}</nav>}</header>
+  <section className="travel-hero"><Image src="/kelana-hero.png" alt="Tebing dan laut tropis di bawah langit senja" fill priority sizes="100vw" className="hero-photo"/><div className="hero-shade"/><div className="hero-orbit" aria-hidden="true"><Icon name="plane"/></div>
+   <div className="hero-copy"><p className="hero-kicker"><span/> TEMAN PERJALANAN DENGAN AI</p><h1>Ke mana hati<br/>ingin <em>pergi?</em></h1><p>Temukan ritmemu. Ceritakan rencanamu.<br/>Biar KelanaAI menyusun perjalanan berikutnya.</p><a className="hero-link" href="#inspirasi">Cari inspirasi perjalanan <span>↗</span></a></div><div className="hero-caption"><Icon name="map-pin"/><div><strong>Sebuah jeda yang kamu cari.</strong><span>Inspirasi pesisir Nusantara</span></div></div><div className="hero-counter" aria-hidden="true">01 <span>/</span> NEXT CHAPTER</div>
+  </section>
+  <section className="planner-wrap" id="rencanakan" aria-labelledby="planner-title"><div className="planner-heading"><h2 id="planner-title"><Icon name="luggage"/>Perjalanan hebat dimulai dari sini.</h2><span>Dirangkai AI, sesuai caramu</span></div>
+   <form onSubmit={submit} className="planner-form"><fieldset disabled={loading}>
+     <label className="destination-field"><span><Icon name="map-pin"/>Tujuan perjalanan</span><input name="destination" required maxLength={120} value={destination} onChange={e=>{setDestination(e.target.value);setSavedId(null)}} placeholder="Mau ke mana?"/></label>
+     <label><span><Icon name="calendar"/>Durasi (hari)</span><input name="days" type="number" required min="1" max="30" value={days} onChange={e=>{setDays(e.target.value);setSavedId(null)}}/></label>
+     <label><span><Icon name="luggage"/>Total budget (USD)</span><input name="budget" type="number" required min="1" max="1000000" step="0.01" value={budget} onChange={e=>{setBudget(e.target.value);setSavedId(null)}}/></label>
+     <label><span><Icon name="user"/>Teman perjalanan</span><select value={style} onChange={e=>{setStyle(e.target.value);setSavedId(null)}}><option value="Solo">Sendiri</option><option value="Couple">Berdua</option><option value="Family">Keluarga</option></select></label>
+     <button className="primary plan-button" disabled={authLoading||loading}>{loading?<><span className="spinner"/>Menyusun rencana…</>:<>Rencanakan <Icon name="plane"/></>}</button>
+   </fieldset></form><div className="planner-note"><span>✧ {user?`Selamat datang, ${user.name.split(" ")[0]}. Siap berkelana?`:"Masuk untuk membuat dan menyimpan itinerary pribadimu."}</span><span>Budget per hari: <strong>USD {Number.isFinite(Number(budget)/Number(days))&&Number(days)>0?(Number(budget)/Number(days)).toLocaleString("en-US",{maximumFractionDigits:2}):"—"}</strong></span></div>
+   {loading&&<div className="planning-progress" role="status"><div className="skeleton"/><p>AI sedang menyusun aktivitas harian untuk {destination}. Tunggu sebentar, ya.</p></div>}
+   {error&&<div className="error-notice" role="alert">{error}{savedId&&<> Rencana dasar sudah tersimpan. Klik Rencanakan untuk mencoba AI kembali, atau <Link href={`/trips/${savedId}`}>buka perjalanan</Link>.</>}</div>}
+  </section>
+  <section className="inspiration section-width" id="inspirasi"><div className="section-heading"><div><p className="eyebrow">PILIH SUASANA BARU</p><h2>Jauh dari rutinitas.<br/><em>Dekat dengan dirimu.</em></h2></div><p>Laut yang luas atau kota penuh cerita?<br/>Mulai dari tempat yang memanggilmu.</p></div>
+   <div className="filter-bar" aria-label="Filter inspirasi">{["Semua","Laut & pulau","Alam & tenang","Budaya & rasa"].map(x=><button key={x} aria-pressed={filter===x} className={filter===x?"active":""} onClick={()=>setFilter(x)}>{x}</button>)}</div>
+   <div className="destination-grid">{escapes.filter(x=>filter==="Semua"||x.category===filter).map(item=><button key={item.name} onClick={()=>choose(item)} className={`destination-card ${item.color}`} aria-label={`Pilih ${item.name}`}><div className="destination-art" aria-hidden="true"><span className="landscape-sun"/><span className="landscape-hill hill-one"/><span className="landscape-hill hill-two"/><Icon name={item.icon}/><span className="card-coordinate">{item.category}</span></div><div className="destination-info"><span className="destination-region">{item.region}</span><h3>{item.name}<span>↗</span></h3><p>{item.description}</p><div className="destination-bottom"><span>{item.days} hari eksplorasi</span><span>{selected===item.name?"✓ Dipilih":"Pilih destinasi"}</span></div></div></button>)}</div><p className="inspiration-note">Durasi dan budget awal adalah inspirasi yang dapat kamu ubah. Ilustrasi destinasi bersifat dekoratif.</p>
+  </section>
+  <section className="journey-section" id="cara-kerja"><div className="section-width journey-layout"><div><p className="eyebrow">SEDERHANA SEJAK AWAL</p><h2>Lebih sedikit tab.<br/><em>Lebih banyak cerita.</em></h2><Link href="/assistant" className="journey-link">Tanya asisten pengetahuan ↗</Link></div><ol>{[["01","Ceritakan perjalananmu","Tentukan tujuan, durasi, budget, dan siapa yang ikut."],["02","Temukan rencana yang pas","AI menyusun aktivitas harian. Kamu tetap menentukan pilihan."],["03","Simpan, lalu lanjutkan","Buka itinerary di Perjalananku, atau lanjutkan percakapan di AI Chat."]].map(([n,t,d])=><li key={n}><span>{n}</span><div><h3>{t}</h3><p>{d}</p></div></li>)}</ol></div></section>
+  <footer className="site-footer section-width"><Link className="brand" href="/">Kelana<span>AI</span></Link><p>Perjalananmu, caramu.</p><Link href="/about">Tentang KelanaAI ↗</Link><span>© {new Date().getFullYear()} KelanaAI</span></footer>
+ </main>
 }

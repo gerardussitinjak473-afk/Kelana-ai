@@ -1,5 +1,5 @@
 const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+  process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "development" ? "http://localhost:8000/api/v1" : "")
 ).replace(/\/$/, "");
 
 const TOKEN_KEY = "kelana_access_token";
@@ -49,6 +49,7 @@ export async function requestJson<T>(
   init: RequestInit = {},
   options: RequestOptions = {},
 ): Promise<T> {
+  if (!API_URL) throw new ApiError("Layanan perjalanan belum tersedia. Silakan coba kembali nanti.", 503);
   const headers = new Headers(init.headers);
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
@@ -62,17 +63,20 @@ export async function requestJson<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...init,
-    cache: "no-store",
-    headers,
-  });
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 120000);
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, { ...init, cache: "no-store", headers, signal: init.signal || controller.signal });
+  } catch (error) {
+    throw new ApiError(error instanceof Error && error.name === "AbortError" ? "Permintaan terlalu lama. Silakan coba lagi." : "Layanan belum dapat dihubungi. Periksa koneksi dan coba lagi.", 0);
+  } finally { window.clearTimeout(timeout); }
 
   if (!response.ok) {
     const payload = await response.json().catch(() => null);
     if (response.status === 401 && options.auth) clearAuthToken();
     throw new ApiError(
-      payload?.detail || `Request failed (${response.status})`,
+      response.status >= 500 ? "Layanan sedang mengalami gangguan. Silakan coba lagi nanti." : typeof payload?.detail === "string" ? payload.detail : "Data belum sesuai. Periksa isian dan coba kembali.",
       response.status,
     );
   }

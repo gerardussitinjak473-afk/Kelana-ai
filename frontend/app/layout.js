@@ -1,21 +1,11 @@
-import { Manrope, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
-
-const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
-
+import FlightTransition from "@/components/FlightTransition";
 export const metadata = {
-  title: "KelanaAI — Rencana perjalanan yang terasa personal",
-  description: "Rencanakan perjalanan yang sesuai ritme, gaya, dan budget-mu bersama KelanaAI.",
+ metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")),
+ title: {default: "KelanaAI â€” Perjalananmu, caramu", template: "%s | KelanaAI"},
+ description: "Susun itinerary personal, simpan perjalanan, dan temukan jawaban dari asisten perjalanan KelanaAI.",
+ icons: {icon: "/icon.svg"},
+ openGraph: {title: "KelanaAI â€” Perjalananmu, caramu", description: "Mulai perjalanan berikutnya bersama KelanaAI", images: [{url: "/kelana-hero.png", width:1672, height:941}]}
 };
-
-export default function RootLayout({ children }) {
-  return (
-    <html lang="id">
-      <body className={`${manrope.variable} ${playfair.variable} font-[var(--font-manrope)] antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
-      </body>
-    </html>
-  );
-}
+export default function RootLayout({children}) {return <html lang="id"><body><AuthProvider><FlightTransition/>{children}</AuthProvider></body></html>}

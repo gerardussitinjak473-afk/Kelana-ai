@@ -1,22 +1,33 @@
 import os
+from datetime import datetime, timezone
 from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    field_serializer,
+    field_validator,
+)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from database import init_db
 from dependencies import get_current_user, get_db
-from models import Trip, User
+from models import Conversation, Message, Trip, User
 from services.auth_service import (
     authenticate_user,
     create_access_token,
     hash_password,
     normalize_email,
 )
-from services.bedrock_service import generate_ai_recommendation
+from services.bedrock_service import (
+    generate_ai_recommendation,
+    generate_conversation_response,
+)
 from services.kb_service import KnowledgeBaseNotConfigured, ask_knowledge_base
 from services.trip_service import (
     calculate_daily_budget,
@@ -31,11 +42,16 @@ app = FastAPI(title="KelanaAI API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL", "http://localhost:3000")],
+    allow_origins=[origin.strip() for origin in os.getenv("FRONTEND_URL", "http://localhost:3000").split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/health", tags=["Operations"])
+def health():
+    return {"status": "ok", "service": "KelanaAI"}
+
 
 # Importing both models above registers every table before create_all runs.
 init_db()
@@ -101,6 +117,64 @@ class UpdateBudgetRequest(BaseModel):
     budget: float = Field(gt=0)
 
 
+class ConversationCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str | None = Field(default=None, max_length=256)
+
+    @field_validator("title")
+    @classmethod
+    def normalize_title(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return " ".join(value.split()) or None
+
+
+class MessageCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    content: str = Field(min_length=1, max_length=20_000)
+
+    @field_validator("content")
+    @classmethod
+    def normalize_content(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Message cannot be empty")
+        return normalized
+
+
+class TimestampedResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    created_at: datetime
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, value: datetime) -> str:
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value.isoformat()
+
+
+class ConversationResponse(TimestampedResponse):
+    id: int
+    user_id: int
+    title: str
+
+
+class MessageResponse(TimestampedResponse):
+    id: int
+    conversation_id: int
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class SendMessageResponse(BaseModel):
+    conversation: ConversationResponse
+    user_message: MessageResponse
+    assistant_message: MessageResponse
+
+
 class QuestionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -133,6 +207,29 @@ def _owned_trip_or_error(
             detail="Anda tidak memiliki akses ke perjalanan ini.",
         )
     return trip
+
+
+def _owned_conversation_or_error(
+    db: Session,
+    conversation_id: int,
+    user_id: int,
+) -> Conversation:
+    conversation = (
+        db.query(Conversation)
+        .filter(
+            Conversation.id == conversation_id,
+            Conversation.user_id == user_id,
+        )
+        .first()
+    )
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return conversation
+
+
+def _title_from_first_message(content: str) -> str:
+    title = " ".join(content.split())
+    return title if len(title) <= 60 else f"{title[:57].rstrip()}..."
 
 
 @app.post(
@@ -185,6 +282,126 @@ def get_me(
         name=current_user.name,
         email=current_user.email,
         trip_count=trip_count,
+    )
+
+
+@app.post(
+    "/api/v1/conversations",
+    response_model=ConversationResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_conversation(
+    request: ConversationCreateRequest | None = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    conversation = Conversation(
+        user_id=current_user.id,
+        title=request.title if request and request.title else "New Conversation",
+    )
+    db.add(conversation)
+    db.commit()
+    db.refresh(conversation)
+    return conversation
+
+
+@app.get(
+    "/api/v1/conversations",
+    response_model=list[ConversationResponse],
+)
+def get_conversations(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(Conversation)
+        .filter(Conversation.user_id == current_user.id)
+        .order_by(Conversation.created_at.desc(), Conversation.id.desc())
+        .all()
+    )
+
+
+@app.get(
+    "/api/v1/conversations/{conversation_id}/messages",
+    response_model=list[MessageResponse],
+)
+def get_conversation_messages(
+    conversation_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _owned_conversation_or_error(db, conversation_id, current_user.id)
+    return (
+        db.query(Message)
+        .filter(Message.conversation_id == conversation_id)
+        .order_by(Message.created_at.asc(), Message.id.asc())
+        .all()
+    )
+
+
+@app.post(
+    "/api/v1/conversations/{conversation_id}/messages",
+    response_model=SendMessageResponse,
+)
+def send_conversation_message(
+    conversation_id: int,
+    request: MessageCreateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    conversation = _owned_conversation_or_error(
+        db,
+        conversation_id,
+        current_user.id,
+    )
+
+    user_message = Message(
+        conversation_id=conversation.id,
+        role="user",
+        content=request.content,
+    )
+    db.add(user_message)
+    if conversation.title == "New Conversation":
+        conversation.title = _title_from_first_message(request.content)
+    db.commit()
+    db.refresh(conversation)
+    db.refresh(user_message)
+
+    history = (
+        db.query(Message)
+        .filter(Message.conversation_id == conversation.id)
+        .order_by(Message.created_at.asc(), Message.id.asc())
+        .all()
+    )
+    try:
+        answer = generate_conversation_response(
+            [
+                {"role": message.role, "content": message.content}
+                for message in history
+            ]
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "KelanaAI belum dapat menjawab. Periksa AWS credentials, "
+                "region, dan akses Amazon Bedrock."
+            ),
+        ) from exc
+
+    assistant_message = Message(
+        conversation_id=conversation.id,
+        role="assistant",
+        content=answer,
+    )
+    db.add(assistant_message)
+    db.commit()
+    db.refresh(assistant_message)
+
+    return SendMessageResponse(
+        conversation=conversation,
+        user_message=user_message,
+        assistant_message=assistant_message,
     )
 
 
