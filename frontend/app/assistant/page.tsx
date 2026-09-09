@@ -1,5 +1,6 @@
 "use client";
 
+import AIContent from "@/components/AIContent";
 import { ArrowLeftIcon, BookOpenIcon, PaperAirplaneIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
@@ -71,7 +72,7 @@ export default function AssistantPage() {
         {result && (
           <article className="mt-6 rounded-[2rem] border border-[#ded8cc] bg-white p-6 shadow-sm sm:p-8">
             <div className="flex items-center gap-2 text-pine"><SparklesIcon className="h-5 w-5" /><h2 className="font-extrabold">Jawaban berbasis Knowledge Base</h2></div>
-            <p className="mt-5 whitespace-pre-wrap leading-7 text-slate-700">{result.answer}</p>
+            <div className="mt-5"><AIContent content={result.answer} /></div>
             <div className="mt-7 border-t border-slate-100 pt-5">
               <div className="flex items-center gap-2 text-sm font-extrabold text-ink"><BookOpenIcon className="h-5 w-5" /> Sumber</div>
               {result.sources.length ? <ul className="mt-3 flex flex-wrap gap-2">{result.sources.map((source) => <li key={source} className="rounded-full bg-teal-50 px-3 py-2 text-xs font-bold text-pine">{source}</li>)}</ul> : <p className="mt-2 text-sm text-slate-500">Tidak ada referensi yang dikembalikan.</p>}

@@ -1,1 +1,1 @@
-export default function Loading(){return <main className="fallback" role="status" aria-label="Memuat halaman"><img className="loading-plane" src="/travel/icons/plane.svg" alt=""/><h1>Menyiapkan perjalananmu…</h1><div className="skeleton"/><div className="skeleton"/></main>}
+export default function Loading(){return <main className="fallback" role="status" aria-label="Memuat halaman"><img src="/travel/icons/compass.svg" alt=""/><h1>Menyiapkan perjalananmu…</h1><div className="skeleton"/><div className="skeleton"/></main>}

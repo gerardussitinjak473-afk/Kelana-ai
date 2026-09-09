@@ -1,3 +1,4 @@
+import AIContent from "@/components/AIContent";
 import type { Message } from "@/types/conversation";
 import { formatMessageTime } from "@/utils/formatDateTime";
 
@@ -20,7 +21,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             : "rounded-bl-md border border-[#e5ded2] bg-white text-ink"
         } ${message.pending ? "opacity-75" : ""}`}
       >
-        <p className="whitespace-pre-wrap text-sm leading-7">{message.content}</p>
+        {isUser ? <p className="whitespace-pre-wrap text-sm leading-7">{message.content}</p> : <AIContent content={message.content} />}
         <time
           dateTime={message.created_at}
           className={`mt-1.5 block text-right text-[11px] font-semibold ${

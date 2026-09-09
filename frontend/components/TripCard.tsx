@@ -1,3 +1,4 @@
+import {getTravelIcon} from "@/utils/travelCategory";
 import {
   ArrowRightIcon,
   CalendarDaysIcon,
@@ -47,8 +48,8 @@ export function formatUsd(value: number) {
 
 export function CategoryBadge({ category }: { category: BudgetCategory }) {
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-extrabold ring-1 ring-inset ${categoryStyles[category]}`}>
-      {category}
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold ring-1 ring-inset ${categoryStyles[category]}`}>
+      <img src={"/travel/icons/"+getTravelIcon(category)+".svg"} alt="" className="h-4 w-4" />{category}
     </span>
   );
 }

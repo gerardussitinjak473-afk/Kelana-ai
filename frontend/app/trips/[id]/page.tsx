@@ -17,6 +17,8 @@ import {
   getDestinationVisual,
   TravelStyleBadge,
 } from "@/components/TripCard";
+import AIContent from "@/components/AIContent";
+import {getTravelIcon} from "@/utils/travelCategory";
 import UserMenu from "@/components/UserMenu";
 import { getTrip } from "@/services/tripService";
 import type { Trip } from "@/types/trip";
@@ -45,7 +47,7 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
       <header className="border-b border-white/10 bg-ink text-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5 sm:px-8">
           <Link href="/" className="flex items-center gap-2 font-extrabold">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-coral text-white"><PaperAirplaneIcon className="h-4 w-4" /></span>
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-coral text-white"><img src={"/travel/icons/"+getTravelIcon(trip?.category || "Standard")+".svg"} alt="" className="h-5 w-5 brightness-0 invert" /></span>
             Kelana<span className="-ml-2 text-teal-300">AI</span>
           </Link>
           <div className="flex items-center gap-4">
@@ -110,7 +112,7 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
               </div>
               <div className="px-6 py-7 sm:px-8 sm:py-9">
                 {trip.ai_recommendation ? (
-                  <div className="whitespace-pre-wrap text-sm leading-8 text-slate-600">{trip.ai_recommendation}</div>
+                  <AIContent content={trip.ai_recommendation} />
                 ) : (
                   <p className="rounded-2xl bg-teal-50 p-5 text-sm leading-6 text-slate-600">Itinerary AI belum dibuat untuk perjalanan ini.</p>
                 )}
